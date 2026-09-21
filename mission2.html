@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mission 2 - 최적 조건</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <script defer src="js/main.js"></script>
+  <script defer src="js/mission2.js"></script>
+
+  <style>
+    body, html {
+      min-height: 100vh; margin: 0; display: flex; flex-direction: column;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a3c23 0%, #3a5a40 100%);
+    }
+
+    .top-bar { position: absolute; top: 20px; left: 20px; z-index: 100; }
+    .back-btn {
+      background-color: rgba(255, 255, 255, 0.85); color: #1a3c23; text-decoration: none;
+      padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4);
+      backdrop-filter: blur(8px); display: inline-flex; transition: all 0.3s ease;
+    }
+    .back-btn:hover { background-color: #ffffff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+    .mission-container { flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 80px 20px 40px 20px; box-sizing: border-box; }
+    .mission-card { background: #ffffff; padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 800px; width: 100%; }
+    .mission-title { color: #1a3c23; margin-top: 0; font-size: 2rem; text-align: center; font-weight: 800; letter-spacing: -0.5px; }
+    
+    .blank-input { text-align: center; font-weight: bold; color: #1b5e20; border: 1px solid #b0bec5; border-bottom: 2px solid #2e7d32; border-radius: 4px; padding: 4px; outline: none; }
+    .blank-input:focus { border-bottom: 2px solid #f57f17; }
+
+    /* 💡 [복구] 변인 뱃지 및 드롭존 디자인 */
+    .m2-badge-pool { 
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; 
+      background: #f8fafc; border: 1px solid #cfd8dc; padding: 12px; border-radius: 8px; margin-bottom: 16px; 
+    }
+    .m2-badge {
+      background: #ffffff; border: 2px solid #90a4ae; border-radius: 20px; 
+      padding: 6px 14px; font-size: 0.9rem; font-weight: 700; color: #37474f; 
+      cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.08); user-select: none;
+    }
+    .m2-badge:active { cursor: grabbing; transform: scale(0.95); }
+    
+    .m2-dropzone {
+      min-height: 46px; background: #ffffff; border: 2px dashed #b0bec5; border-radius: 8px; 
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; 
+      padding: 8px; transition: background 0.2s;
+    }
+    .drag-over-m2 { background: #e3f2fd !important; border-color: #1e88e5 !important; }
+    
+    .exp-grid {
+      display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 8px; 
+      background: #f1f8e9; padding: 14px; border-radius: 8px; border: 1px solid #c8e6c9; margin-bottom: 12px;
+    }
+    .exp-grid label { font-weight: bold; font-size: 0.9rem; color: #2e7d32; text-align: right; padding-right: 8px; }
+
+    /* 💡 스텝 화면 분리 및 숨김 보장 */
+    .m2-step-container { display: none !important; }
+    .m2-step-container.active { display: block !important; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="back-btn">⬅ 식물 연구소로 돌아가기</a>
+</div>
+
+<!-- 모달 창 영역 -->
+<div class="modal-overlay" id="result-image-modal">
+  <div class="step-image-modal-card" style="max-width: 600px;">
+    <div class="step-image-header">
+      <h3 id="result-modal-title">📈 실험 결과 확인</h3>
+      <button class="modal-close" style="margin:0; padding:4px 10px;" onclick="document.getElementById('result-image-modal').style.display='none'">✕ 닫기</button>
+    </div>
+    <div class="step-image-body">
+      <div class="step-image-frame" id="result-image-frame" style="min-height: 250px; background: #fff;"></div>
+      <div class="step-image-desc" id="result-image-desc" style="background:#e8f5e9; font-weight:bold;"></div>
+    </div>
+    <div class="step-image-footer" style="justify-content: center;">
+      <button type="button" class="btn-action" style="margin:0; padding:12px 30px; font-size:1.05rem;" onclick="document.getElementById('result-image-modal').style.display='none'">확인 완료</button>
+    </div>
+  </div>
+</div>
+<!-- 💡 코난 모달 창 교체 -->
+<div class="modal-overlay" id="conan-modal">
+  <div class="modal-card" style="max-width: 550px; text-align: center; border: 4px solid #1976d2; background: #e3f2fd; z-index: 1000;">
+    <img src="images/conan.png" alt="탐정 코난" style="max-width: 120px; height: auto; margin-bottom: 12px;" onerror="this.style.display='none'">
+    <div style="background: #ffffff; padding: 16px; border-radius: 8px; border: 2px dashed #1565c0; margin-bottom: 16px; text-align:left; font-size: 0.95rem; line-height: 1.6;">
+      <strong style="color:#1565c0; font-size: 1.05rem;">[환경요인과 광합성의 관계]</strong><br>
+      빛의 세기, 이산화탄소의 농도, 온도가 모두 알맞게 유지 될 때 광합성이 활발하게 일어나 식물이 잘 자랄 수 있다.
+    </div>
+    <h3 style="color: #1565c0; font-size: 1.3rem; margin-top:0;">🕵️‍♂️ 여기서 잠깐! 광합성은 식물만 할까?</h3>
+    <div style="background: #ffffff; padding: 16px; border-radius: 8px; border: 2px solid #bbdefb; margin: 16px 0; text-align:left; font-size: 0.95rem; line-height: 2.0;">
+      원생생물계에 속하는 식물 플랑크톤과 조류( <input type="text" id="conan-q1" class="quiz-input" style="width:40px; padding:4px; text-align:center;" placeholder="ㄱ">, 
+      <input type="text" id="conan-q2" class="quiz-input" style="width:55px; padding:4px; text-align:center;" placeholder="ㅁㅇ">, 
+      <input type="text" id="conan-q3" class="quiz-input" style="width:65px; padding:4px; text-align:center;" placeholder="ㄷㅅㅁ"> 등 ),<br>
+      원핵생물계에 속하는 일부 세균( <input type="text" id="conan-q4" class="quiz-input" style="width:75px; padding:4px; text-align:center;" placeholder="ㄴㅅㄱ"> ) 등도<br>
+      <strong>엽록소를 이용해 광합성을 한다!</strong>
+    </div>
+    <p id="conan-msg" style="font-weight:bold; font-size:0.95rem; min-height:1.2rem; color:#c62828; margin: 10px 0;"></p>
+    
+    <!-- 💡 수정됨: type="button" 추가 및 this 파라미터 전달 -->
+    <button type="button" class="btn-action" style="font-size: 1.05rem; padding: 12px 28px; width: 100%; margin-top:8px;" onclick="checkConanQuiz(this)">정답 확인</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="master-modal">
+  <div class="modal-card" style="max-width: 600px; text-align: center; border: 4px solid #fbc02d; background: #fffde7; z-index: 1000;">
+    <h2 style="color: #f57f17; font-size: 1.8rem; margin-top:0;">🎉 축하합니다! 🎉</h2>
+    <h3 style="color: #2e7d32; margin-top: 0; margin-bottom: 16px;">당신은 광합성 마스터님으로 승격되셨습니다.</h3>
+    
+    <!-- 💡 이미지 경로 m2_s05_master.png 로 수정 완료 -->
+    <img src="images/m2_s05_master.png" alt="마스터 인증" style="width: 100%; max-width: 520px; height: auto; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" onerror="this.style.display='none'">
+    
+    <button class="btn-action" style="font-size: 1.05rem; padding: 14px 28px; width: 100%; background:#f57f17; margin-top:14px;" onclick="location.href='mission3.html'">➔ Mission 3 (식물의 숨) 가기</button>
+    <button class="modal-close" style="margin-top:14px; width:100%; min-height: 44px;" onclick="document.getElementById('master-modal').style.display='none'">✕ 닫기</button>
+  </div>
+</div>
+
+<main class="mission-container">
+  <div id="stage-2" class="mission-card stage-card active">
+    
+    <div style="background: linear-gradient(135deg, #e4efe7 0%, #f4f9f5 100%); padding: 30px 20px; border-radius: 16px; margin-bottom: 30px; border: 1px solid rgba(26, 60, 35, 0.08); box-shadow: inset 0 2px 10px rgba(255,255,255,0.8);">
+      <h2 class="mission-title" style="margin-bottom: 12px;">Mission 2: 최적 조건</h2>
+      <p style="color: #2c4c34; font-size: 1.05rem; line-height: 1.6; text-align: center; margin: 0; font-weight: 500;">
+        광합성에 영향을 미치는 환경 요인을 탐구해보세요.
+      </p>
+    </div>
+
+    <!-- 단계 네비게이션 -->
+    <div class="step-indicator" id="m2-indicator">
+      <div class="step-item active" id="m2-dot-1">Step 1<br>과정/요인</div>
+      <div class="step-item" id="m2-dot-2">Step 2<br>빛</div>
+      <div class="step-item" id="m2-dot-3">Step 3<br>CO₂</div>
+      <div class="step-item" id="m2-dot-4">Step 4<br>온도</div>
+      <div class="step-item" id="m2-dot-5">Step 5<br>최적조건</div>
+    </div>
+
+    <!-- M2 Step 1 -->
+     <div id="m2-step1" class="m2-step-container active">
+      <div class="interactive-box">
+        <h3>STEP 1: 광합성 과정과 환경 요인 도출</h3>
+        <p style="font-size:0.95rem;">광합성의 과정을 식으로 먼저 완성하고, 영향을 줄 수 있는 환경 요인 3가지를 예측해 봅시다.</p>
+        <div class="exp-section">
+          <h4>1) 광합성 과정 정리</h4>
+          
+          <!-- 💡 수정된 광합성 식 레이아웃 (녹말 삭제, 깔끔한 일렬 정렬) -->
+          <div class="quiz-equation" style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-weight: bold; color: #37474f; margin-top: 15px;">
+            
+            <!-- 반응물 -->
+            <div style="display: flex; align-items: center;">
+              ( <input type="text" class="blank-input" id="m2-eq-in-1" style="width:70px;"> ) &nbsp;+&nbsp; 
+              ( <input type="text" class="blank-input" id="m2-eq-in-2" style="width:90px;"> )
+            </div>
+            
+            <!-- 화살표 및 위(에너지)/아래(장소) 힌트 유지 -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 15px;">
+              <span style="font-size: 0.85rem; color: #e65100;">( <input type="text" class="blank-input" id="m2-eq-energy" placeholder="에너지" style="width:70px; font-size: 0.85rem; padding: 2px; color:#e65100; border-bottom-color:#ff9800;"> )</span>
+              <span style="font-size: 1.8rem; line-height: 0.8; color: #78909c; margin: 4px 0; transform: scaleX(1.6); display: inline-block;">⟶</span>
+              <span style="font-size: 0.85rem; color: #2e7d32;">( <input type="text" class="blank-input" id="m2-eq-place" placeholder="장소" style="width:60px; font-size: 0.85rem; padding: 2px; color:#2e7d32;"> )</span>
+            </div>
+            
+            <!-- 생성물 (심플하게 원상복구) -->
+            <div style="display: flex; align-items: center;">
+              ( <input type="text" class="blank-input" id="m2-eq-out-1" style="width:70px;"> ) 
+              <span style="margin: 0 8px;">+</span> 
+              ( <input type="text" class="blank-input" id="m2-eq-out-2" style="width:60px;"> )
+            </div>
+            
+          </div>
+          <!-- 광합성 식 레이아웃 끝 -->
+
+          <div style="text-align:center;">
+             <button class="btn-action" style="margin-top: 25px;" onclick="checkM2Step1Eq()">확인하기</button>
+             <p id="m2-eq-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.9rem; min-height:1.2rem; line-height: 1.5;"></p>
+          </div>
+        </div>
+        
+        <div class="exp-section" id="m2-factors-area" style="display:none; border-color:#81c784; background:#f1f8e9;">
+          <h4>2) 환경 요인 3가지 예측</h4>
+          <p style="font-size:0.9rem; margin-top:0;">위 식을 바탕으로 식물 주변에서 광합성량에 직접 영향을 미칠 수 있는 환경 요인을 정확히 쓰세요.</p>
+          <div style="text-align: center; margin-bottom: 16px;"><img src="images/M2_s01.png" alt="환경 요인 예측 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.style.display='none'"></div>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <input type="text" class="quiz-input" id="m2-fac-1" placeholder="요인 1" style="width:110px;">
+            <input type="text" class="quiz-input" id="m2-fac-2" placeholder="요인 2" style="width:110px;">
+            <input type="text" class="quiz-input" id="m2-fac-3" placeholder="요인 3" style="width:110px;">
+          </div>
+          <div style="text-align:center; margin-top:14px;">
+             <button class="btn-action" style="background:#2e7d32;" onclick="checkM2Step1Factors()">환경 요인 확인 ➔</button>
+             <p id="m2-fac-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.9rem; min-height:1.2rem;"></p>
+             <button class="btn-action" id="btn-m2-next1" style="background:#f57f17; display:none; margin-top:12px; width:100%;" onclick="goCustomM2Step(2)">다음 Step 2 가기 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 Step 2 -->
+    <div id="m2-step2" class="m2-step-container">
+      <div class="interactive-box">
+        <h3>STEP 2: 빛의 세기와 광합성량</h3>
+        <div class="exp-section">
+          <h4>가설 설정</h4>
+          <div style="text-align: center; margin-bottom: 12px;"><img src="images/M2_s02_light2.png" alt="빛의 세기 실험 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.style.display='none'"></div>
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-weight:bold; font-size:0.95rem; justify-content: center;">
+            빛의 세기가 ( <input type="text" class="quiz-input" id="m2-s2-hyp1" placeholder="변화" style="width:90px;"> ) 질수록, 광합성량이 ( <input type="text" class="quiz-input" id="m2-s2-hyp2" placeholder="결과" style="width:90px;"> ) 할 것이다.
+          </div>
+        </div>
+        <div class="exp-section">
+          <h4>실험 조건 설계</h4>
+          <div style="font-size:0.9rem; font-weight:bold; color:#546e7a; margin-bottom:8px; text-align:center;">[아래의 변인을 알맞은 칸으로 모두 드래그 하세요]</div>
+          
+          <div class="m2-badge-pool" id="m2-s2-pool" ondrop="dropM2(event)" ondragover="allowDropM2(event)">
+            <div class="m2-badge" id="m2-s2-b-light" data-val="light" draggable="true" ondragstart="dragM2(event)">☀️ 빛의 세기</div>
+            <div class="m2-badge" id="m2-s2-b-co2" data-val="co2" draggable="true" ondragstart="dragM2(event)">💨 이산화 탄소 농도</div>
+            <div class="m2-badge" id="m2-s2-b-temp" data-val="temp" draggable="true" ondragstart="dragM2(event)">🌡️ 온도</div>
+            <div class="m2-badge" id="m2-s2-b-photo" data-val="photo" draggable="true" ondragstart="dragM2(event)">🫧 광합성량(산소발생량)</div>
+            <div class="m2-badge" id="m2-s2-b-plant" data-val="plant" draggable="true" ondragstart="dragM2(event)">🌱 식물의 종류</div>
+            <div class="m2-badge" id="m2-s2-b-soil" data-val="soil" draggable="true" ondragstart="dragM2(event)">💧 토양의 습도</div>
+          </div>
+          
+          <div class="exp-grid">
+            <label>다르게 할 조건<br><span style="font-size:0.85rem; color:#1976d2;">(조작 변인)</span></label>
+            <div class="m2-dropzone" id="m2-s2-var1" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+            <label>같게 할 조건<br><span style="font-size:0.85rem; color:#1976d2;">(통제 변인)</span></label>
+            <div class="m2-dropzone" id="m2-s2-var2" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+            <label>측정할 것<br><span style="font-size:0.85rem; color:#1976d2;">(종속 변인)</span></label>
+            <div class="m2-dropzone" id="m2-s2-var3" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+          </div>
+          
+          <!-- 💡 함수 연결 수정 완완료 -->
+          <button class="btn-action" style="width:100%; margin-top:12px; font-size:1.05rem;" onclick="runM2Exp2()">실험 진행 및 결과 확인 ▶</button>
+          <p id="m2-s2-var-msg" style="margin:10px 0 0; text-align:center; font-weight:bold; font-size:0.9rem; min-height:1.2rem;"></p>
+        </div>
+        
+        <div class="exp-section" id="m2-s2-result-area" style="display:none;">
+          <h4>실험 결과 및 결론 도출</h4>
+          <div class="graph-wrapper" style="max-width:350px; margin:0 auto 12px;">
+            <canvas class="chart-cv" id="chart-light-only" width="300" height="180"></canvas>
+            <div style="margin-top:14px;"><input type="range" id="slider-light-only" min="0" max="100" value="0" oninput="drawSingleGraph('chart-light-only', this.value, (x)=>computeRate(x, 70, 25).rate, '빛의 세기 (상대값)', '#2e7d32')"></div>
+          </div>
+          <div style="background:#e8f5e9; padding:14px; border-radius:6px; font-weight:bold; font-size:0.95rem; text-align:center; line-height:1.8;">
+            빛의 세기가 ( <input type="text" class="quiz-input" id="m2-s2-con1" placeholder="예: 강해" style="width:80px;"> ) 지면,<br>
+            광합성량은 ( <input type="text" class="quiz-input" id="m2-s2-con2" placeholder="예: 증가하다가 일정 세기 이상이면 일정" style="width:80%; max-width:320px; margin-top:6px;"> ) 하다.
+          </div>
+          <div style="text-align:center; margin-top:14px;">
+            <button class="btn-action" onclick="checkM2Conclusion2()">결론 확인 ➔</button>
+            <p id="m2-s2-con-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.95rem; min-height:1.2rem; line-height: 1.6;"></p>
+            <button class="btn-action" id="btn-m2-next2" style="background:#f57f17; display:none; margin-top:12px; width:100%;" onclick="goCustomM2Step(3)">다음 Step 3 가기 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 Step 3 -->
+    <div id="m2-step3" class="m2-step-container">
+      <div class="interactive-box">
+        <h3>STEP 3: 이산화 탄소 농도와 광합성량</h3>
+        <div class="exp-section">
+          <h4>가설 설정</h4>
+          <div style="text-align: center; margin-bottom: 12px;"><img src="images/M2_s03_CO2_2.png" alt="이산화 탄소 농도 실험 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.style.display='none'"></div>
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-weight:bold; font-size:0.95rem; justify-content: center;">
+            이산화 탄소 농도가 ( <input type="text" class="quiz-input" id="m2-s3-hyp1" placeholder="변화" style="width:90px;"> ) 질수록, 광합성량이 ( <input type="text" class="quiz-input" id="m2-s3-hyp2" placeholder="결과" style="width:90px;"> ) 할 것이다.
+          </div>
+        </div>
+        <div class="exp-section">
+          <h4>실험 조건 설계</h4>
+          
+          <div class="m2-badge-pool" id="m2-s3-pool" ondrop="dropM2(event)" ondragover="allowDropM2(event)">
+            <div class="m2-badge" id="m2-s3-b-light" data-val="light" draggable="true" ondragstart="dragM2(event)">☀️ 빛의 세기</div>
+            <div class="m2-badge" id="m2-s3-b-co2" data-val="co2" draggable="true" ondragstart="dragM2(event)">💨 이산화 탄소 농도</div>
+            <div class="m2-badge" id="m2-s3-b-temp" data-val="temp" draggable="true" ondragstart="dragM2(event)">🌡️ 온도</div>
+            <div class="m2-badge" id="m2-s3-b-photo" data-val="photo" draggable="true" ondragstart="dragM2(event)">🫧 광합성량(산소발생량)</div>
+            <div class="m2-badge" id="m2-s3-b-plant" data-val="plant" draggable="true" ondragstart="dragM2(event)">🌱 식물의 종류</div>
+            <div class="m2-badge" id="m2-s3-b-soil" data-val="soil" draggable="true" ondragstart="dragM2(event)">💧 토양의 습도</div>
+          </div>
+          
+          <div class="exp-grid">
+            <label>다르게 할 조건</label><div class="m2-dropzone" id="m2-s3-var1" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+            <label>같게 할 조건</label><div class="m2-dropzone" id="m2-s3-var2" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+            <label>측정할 것</label><div class="m2-dropzone" id="m2-s3-var3" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+          </div>
+          
+          <!-- 💡 함수 연결 수정 완료 -->
+          <button class="btn-action" style="width:100%; margin-top:12px; font-size:1.05rem;" onclick="runM2Exp3()">실험 진행 및 결과 확인 ▶</button>
+          <p id="m2-s3-var-msg" style="margin:10px 0 0; text-align:center; font-weight:bold; font-size:0.9rem; min-height:1.2rem;"></p>
+        </div>
+        
+        <div class="exp-section" id="m2-s3-result-area" style="display:none;">
+          <h4>실험 결과 및 결론 도출</h4>
+          <div class="graph-wrapper" style="max-width:350px; margin:0 auto 12px;">
+            <canvas class="chart-cv" id="chart-co2-only" width="300" height="180"></canvas>
+            <div style="margin-top:14px;"><input type="range" id="slider-co2-only" min="0" max="100" value="0" oninput="drawSingleGraph('chart-co2-only', this.value, (x)=>computeRate(70, x, 25).rate, '이산화 탄소 농도 (상대값)', '#0277bd')"></div>
+          </div>
+          <div style="background:#e3f2fd; padding:14px; border-radius:6px; font-weight:bold; font-size:0.95rem; text-align:center; line-height:1.8;">
+            이산화 탄소 농도가 ( <input type="text" class="quiz-input" id="m2-s3-con1" placeholder="예: 높아" style="width:80px;"> ) 지면,<br>
+            광합성량은 ( <input type="text" class="quiz-input" id="m2-s3-con2" placeholder="예: 증가하다가 일정 농도 이상이면 일정" style="width:80%; max-width:320px; margin-top:6px;"> ) 하다.
+          </div>
+          <div style="text-align:center; margin-top:14px;">
+            <button class="btn-action" onclick="checkM2Conclusion3()">결론 확인 ➔</button>
+            <p id="m2-s3-con-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.95rem; min-height:1.2rem;"></p>
+            <button class="btn-action" id="btn-m2-next3" style="background:#f57f17; display:none; margin-top:12px; width:100%;" onclick="goCustomM2Step(4)">다음 Step 4 가기 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 Step 4 -->
+    <div id="m2-step4" class="m2-step-container">
+      <div class="interactive-box">
+        <h3>STEP 4: 온도와 광합성량</h3>
+        <div class="exp-section">
+          <h4>가설 설정</h4>
+          <div style="text-align: center; margin-bottom: 12px;"><img src="images/M2_s04_pot.png" alt="온도 실험 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.style.display='none'"></div>
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-weight:bold; font-size:0.95rem; justify-content: center;">
+            온도가 ( <input type="text" class="quiz-input" id="m2-s4-hyp1" placeholder="변화" style="width:90px;"> ) 질수록, 광합성량이 ( <input type="text" class="quiz-input" id="m2-s4-hyp2" placeholder="결과" style="width:90px;"> ) 할 것이다.
+          </div>
+        </div>
+        <div class="exp-section">
+          <h4>실험 조건 설계</h4>
+          
+          <div class="m2-badge-pool" id="m2-s4-pool" ondrop="dropM2(event)" ondragover="allowDropM2(event)">
+            <div class="m2-badge" id="m2-s4-b-light" data-val="light" draggable="true" ondragstart="dragM2(event)">☀️ 빛의 세기</div>
+            <div class="m2-badge" id="m2-s4-b-co2" data-val="co2" draggable="true" ondragstart="dragM2(event)">💨 이산화 탄소 농도</div>
+            <div class="m2-badge" id="m2-s4-b-temp" data-val="temp" draggable="true" ondragstart="dragM2(event)">🌡️ 온도</div>
+            <div class="m2-badge" id="m2-s4-b-photo" data-val="photo" draggable="true" ondragstart="dragM2(event)">🫧 광합성량(산소발생량)</div>
+            <div class="m2-badge" id="m2-s4-b-plant" data-val="plant" draggable="true" ondragstart="dragM2(event)">🌱 식물의 종류</div>
+            <div class="m2-badge" id="m2-s4-b-soil" data-val="soil" draggable="true" ondragstart="dragM2(event)">💧 토양의 습도</div>
+          </div>
+          
+          <div class="exp-grid">
+            <label>다르게 할 조건</label><div class="m2-dropzone" id="m2-s4-var1" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+            <label>같게 할 조건</label><div class="m2-dropzone" id="m2-s4-var2" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+            <label>측정할 것</label><div class="m2-dropzone" id="m2-s4-var3" ondrop="dropM2(event)" ondragover="allowDropM2(event)" ondragleave="dragLeaveM2(event)"></div>
+          </div>
+          
+          <button class="btn-action" style="width:100%; margin-top:12px; font-size:1.05rem;" onclick="runM2Exp4()">실험 진행 및 결과 확인 ▶</button>
+          <p id="m2-s4-var-msg" style="margin:10px 0 0; text-align:center; font-weight:bold; font-size:0.9rem; min-height:1.2rem;"></p>
+        </div>
+        
+        <div class="exp-section" id="m2-s4-result-area" style="display:none;">
+          <h4>실험 결과 및 결론 도출</h4>
+          <div class="graph-wrapper" style="max-width:350px; margin:0 auto 12px;">
+            <canvas class="chart-cv" id="chart-temp-only" width="300" height="180"></canvas>
+            <div style="margin-top:14px;"><input type="range" id="slider-temp-only" min="0" max="60" value="0" oninput="drawSingleGraph('chart-temp-only', this.value, getTempRate, '온도(℃)', '#d84315')"></div>
+          </div>
+          <div style="background:#fff3e0; padding:14px; border-radius:6px; font-weight:bold; font-size:0.95rem; text-align:center; line-height:1.8;">
+            온도가 ( <input type="text" class="quiz-input" id="m2-s4-con1" placeholder="예: 높아" style="width:80px;"> ) 지면,<br>
+            광합성량은 ( <input type="text" class="quiz-input" id="m2-s4-con2" placeholder="예: 증가하다가 적정 온도를 넘으면 급격히 감소" style="width:80%; max-width:350px; margin-top:6px;"> ) 한다.
+          </div>
+          <div style="text-align:center; margin-top:14px;">
+            <button class="btn-action" onclick="checkM2Conclusion4()">결론 확인 ➔</button>
+            <p id="m2-s4-con-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.95rem; min-height:1.2rem;"></p>
+            <button class="btn-action" id="btn-m2-next4" style="background:#f57f17; display:none; margin-top:12px; width:100%;" onclick="goCustomM2Step(5)">다음 Step 5 가기 ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 Step 5 -->
+    <div id="m2-step5" class="m2-step-container">
+      <div class="interactive-box">
+        <h3>STEP 5: 광합성 최적 조건 종합 분석</h3>
+        <p style="font-size:0.95rem;">세 가지 요인을 동시에 조절하여 광합성량이 최대가 되는 최적 조건을 찾아보세요.</p>
+        
+        <div class="slider-control"><label>빛의 세기 (상대값): <span id="val-light">20</span></label><input type="range" id="slider-light" min="0" max="100" value="20" oninput="updateSimulationCombined()"></div>
+        <div class="slider-control"><label>이산화 탄소(CO₂) 농도 (상대값): <span id="val-co2">20</span></label><input type="range" id="slider-co2" min="0" max="100" value="20" oninput="updateSimulationCombined()"></div>
+        <div class="slider-control"><label>온도: <span id="val-temp">20</span> ℃</label><input type="range" id="slider-temp" min="0" max="60" value="20" oninput="updateSimulationCombined()"></div>
+        
+        <div class="status-screen" id="status-photo" style="margin: 15px 0; padding: 15px; background: #e8f5e9; border: 2px solid #a5d6a7; border-radius: 8px; text-align: center; font-size: 1.1rem; color: #2e7d32;">
+          현재 분당 산소 방출 기포 수: <strong>25개</strong>
+        </div>
+        
+        <div class="graphs-container" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+          <div class="graph-wrapper" style="flex: 1; min-width: 200px;"><h4>[빛 - 광합성량]</h4><canvas class="chart-cv" id="chart-light" width="220" height="130" style="width: 100%; background: #f9f9f9; border: 1px solid #ccc;"></canvas></div>
+          <div class="graph-wrapper" style="flex: 1; min-width: 200px;"><h4>[CO₂ - 광합성량]</h4><canvas class="chart-cv" id="chart-co2" width="220" height="130" style="width: 100%; background: #f9f9f9; border: 1px solid #ccc;"></canvas></div>
+          <div class="graph-wrapper" style="flex: 1; min-width: 200px;"><h4>[온도 - 광합성량]</h4><canvas class="chart-cv" id="chart-temp" width="220" height="130" style="width: 100%; background: #f9f9f9; border: 1px solid #ccc;"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!-- 💡 화면 클릭을 방해하지 않도록 pointer-events: none 스타일 추가 -->
+<canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; z-index: 9999;"></canvas>
+
+</body>
+</html>

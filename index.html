@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>식물 연구소</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="js/main.js"></script>
+  <style>
+    /* 전체 화면 레이아웃 */
+    body, html {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Pretendard', sans-serif;
+      /* 💡 [수정됨] 다른 미션과 동일한 진한 청록색 배경 적용 */
+      background: linear-gradient(135deg, #1a3c23 0%, #3a5a40 100%);
+      position: relative;
+    }
+
+    /* 초기화 버튼 위치 독립 (우측 상단) */
+    .top-action-bar {
+      text-align: right;
+      padding: 15px 2.5% 0;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, 0.85); /* 💡 어두운 배경에 맞게 색상 변경 */
+      color: #1a3c23; 
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: 10px 24px; 
+      font-size: 0.95rem; 
+      font-weight: bold; 
+      border-radius: 20px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    
+    .btn-reset:hover { 
+      transform: scale(1.05); 
+      background: #ffffff; 
+    }
+
+    /* 밝고 산뜻한 청록색(Teal) 헤더 박스 디자인 */
+    .main-header-box {
+      background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+      padding: 35px 20px;
+      border-radius: 12px;
+      border: 1px solid #80cbc4; 
+      margin: 15px auto 25px;
+      text-align: center;
+      max-width: 900px;
+      width: 95%;
+      box-sizing: border-box;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); /* 💡 어두운 배경에서 살짝 띄우기 위해 그림자 강화 */
+    }
+
+    .main-header-box h2 {
+      color: #004d40; 
+      margin: 0;
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .main-header-box hr {
+      border: 0;
+      border-top: 1px solid #80cbc4; 
+      margin: 18px auto;
+      width: 80%;
+    }
+
+    .main-header-box p {
+      color: #00695c; 
+      font-size: 1.05rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    /* 직사각형 탭 내비게이션 */
+    #stage-nav {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      justify-content: space-between;
+      margin: 0 auto 30px;
+      max-width: 900px;
+      width: 95%;
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav-btn {
+      flex: 1;
+      background-color: rgba(255, 255, 255, 0.15); /* 💡 어두운 배경에 맞춘 반투명 디자인 */
+      color: rgba(255, 255, 255, 0.6);           
+      padding: 16px 5px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      line-height: 1.4;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-btn:not(.disabled) {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    
+    .nav-btn:not(.disabled):hover {
+      background-color: #2e7d32; 
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+
+    .nav-btn.disabled {
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* === 💡 [수정됨] 하단 영역을 하얀색 둥근 카드 안에 담아 깔끔하게 정리 === */
+    .main-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: row; 
+      width: 95%;
+      max-width: 900px;
+      margin: 0 auto 40px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      overflow: hidden; /* 보상 영역의 모서리도 카드 모양에 맞춰 둥글게 깎임 */
+      min-height: 400px;
+      position: relative;
+    }
+
+    #start-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      z-index: 50;
+    }
+
+    .start-top {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .start-top img {
+      width: 100%;
+      max-width: 450px;
+      max-height: 40vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      border: 3px solid #e8f5e9;
+      margin-bottom: 25px;
+    }
+
+    .start-bottom {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(244, 249, 245, 0.9);
+      border-top: 2px dashed #c8e6c9;
+    }
+    
+    .btn-start {
+      background: #ffeb3b; 
+      color: #212121; 
+      border: none;
+      padding: 10px 24px; 
+      font-size: 0.95rem; 
+      font-weight: bold; 
+      border-radius: 20px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15); 
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn-start:hover { 
+      transform: scale(1.05); 
+      background: #fdd835; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .image-area {
+      flex: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .image-area img {
+      width: 100%;
+      max-width: 600px;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: 2px solid #e8f5e9;
+    }
+
+    .reward-container {
+      flex: 1;
+      background-color: #f9fbe7;
+      border-left: 3px dashed #c5e1a5;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      min-width: 280px; 
+    }
+
+    .reward-header {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #33691e;
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      border-bottom: 2px solid #dcedc8;
+      padding-bottom: 10px;
+    }
+
+    #reward-area {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(5, 68px);
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .reward-slot {
+      width: 64px; 
+      height: 64px;
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      border: 2px dashed #b0bec5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .reward-item {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 우측 상단 초기화 버튼 -->
+<div class="top-action-bar">
+  <button class="btn-reset" onclick="resetAllProgress()">↺ 초기화</button>
+</div>
+
+<!-- 밝고 세련된 청록색(Teal) 테마 헤더 박스 -->
+<div class="main-header-box">
+  <h2>식물 연구소</h2>
+  <hr>
+  <p>식물과 에너지에 관해 연구합시다.</p>
+</div>
+
+<!-- 직사각형 탭 내비게이션 -->
+<nav id="stage-nav">
+  <a href="mission1.html" class="nav-btn">M1 식물의 밥</a>
+  <a href="mission2.html" class="nav-btn disabled">🔒 M2 최적조건</a>
+  <a href="mission3.html" class="nav-btn disabled">🔒 M3 식물의 숨</a>
+  <a href="mission4.html" class="nav-btn disabled">🔒 M4 햇빛 금고 </a>
+  <a href="mission5.html" class="nav-btn disabled">🔒 히든프로젝트</a>
+</nav>
+
+<!-- 하단 영역 (하얀색 둥근 카드 안에 담김) -->
+<main class="main-container">
+  
+  <div id="start-overlay">
+    <div class="start-top">
+      <img src="images/main_1.png" alt="식물 연구소 실험실" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect width=%22400%22 height=%22300%22 fill=%22%23e8f5e9%22/%3E%3Ctext x=%22200%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%2378909c%22 font-size=%2220%22%3E메인 이미지 (images/main_1.png)%3C/text%3E%3C/svg%3E'">
+      <p style="font-size:1.3rem; color:#546e7a; margin: 0; font-weight: bold; text-align: center;">식물과 에너지에 관해 연구합시다.</p>
+    </div>
+    <div class="start-bottom">
+      <button class="btn-start" onclick="startResearch()">🚀 연구 시작</button>
+    </div>
+  </div>
+
+  <div class="image-area">
+    <img src="images/main_1.png" alt="과학 실험실에서 탐구하는 모습">
+  </div>
+
+  <div class="reward-container">
+    <div class="reward-header">
+      <span style="text-align: center;">🏆 햇빛 창고</span>
+      <button id="btn-claim-reward" style="padding: 10px; font-size: 0.95rem; font-weight: bold; border-radius: 12px; border: none; transition: 0.2s;" onclick="claimReward()">🎁 보상 얻기 (남은 횟수: <span id="reward-count">0</span>)</button>
+    </div>
+    
+    <div id="reward-area"></div>
+  </div>
+
+</main>
+
+<canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; z-index: 9999;"></canvas>
+
+</body>
+</html>

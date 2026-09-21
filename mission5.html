@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mission 5 - 히든 프로젝트</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+
+<div class="modal-overlay" id="m1-quiz-modal">
+  <div class="modal-card">
+    <h3 style="color:var(--primary); margin-top:0; border-bottom:2px solid var(--primary-light); padding-bottom:8px;">🧐 생태계 기초 퀴즈</h3>
+    <p style="font-size:0.95rem; color:#263238; margin-bottom:16px; line-height:1.5;">
+      <strong>Q. 생태계의 먹이사슬에서 식물과 같이 생태계의 기초가 되는 생물을 통틀어 무엇이라 부르는가?</strong>
+    </p>
+    <div style="font-size:0.85rem; font-weight:bold; color:#78909c; margin-bottom:4px;">[ 보기 ] (아래 뱃지를 드래그하세요)</div>
+    <div class="m3-badge-pool" id="m5-pool" ondrop="dropM5(event)" ondragover="allowDropM5(event)">
+       <div class="m3-badge" id="m5-opt-1" draggable="true" ondragstart="dragM5(event)">🌱 생산자</div>
+       <div class="m3-badge" id="m5-opt-2" draggable="true" ondragstart="dragM5(event)">🐰 일차 소비자</div>
+       <div class="m3-badge" id="m5-opt-3" draggable="true" ondragstart="dragM5(event)">🐺 이차 소비자</div>
+       <div class="m3-badge" id="m5-opt-4" draggable="true" ondragstart="dragM5(event)">🍄 분해자</div>
+    </div>
+    <div style="font-size:0.85rem; font-weight:bold; color:#2e7d32; margin-top:16px; margin-bottom:4px;">[ 정답 제출칸 ] (이곳에 드래그하세요)</div>
+    <div class="m3-dropzone" id="m5-dropzone" ondrop="dropM5(event)" ondragover="allowDropM5(event)" style="min-height: 70px; justify-content: center; background: #e8f5e9; border: 2px dashed #81c784; padding: 10px;">
+    </div>
+    <p id="m5-quiz-msg" style="font-weight:bold; font-size:0.95rem; margin-top:14px; min-height:1.2rem; text-align:center; line-height: 1.5;"></p>
+    <button class="btn-action" style="width:100%; margin-top:10px; font-size:1.05rem;" onclick="checkM5Quiz()">정답 확인</button>
+    <button class="modal-close" style="width:100%; margin-top:8px; background:#90a4ae;" onclick="document.getElementById('m5-quiz-modal').style.display='none'">✕ 닫기</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="m5-recovery-modal">
+  <div class="modal-card">
+    <h3 style="color:var(--primary); margin-top:0; border-bottom:2px solid var(--primary-light); padding-bottom:8px;">🌱 생태계 평형 퀴즈</h3>
+    <p style="font-size:0.95rem; color:#263238; margin-bottom:16px; line-height:1.5;">
+      <strong>Q. 식물(생산자)이 회복되자 초식동물과 육식동물도 원래대로 돌아왔습니다. 이처럼 생태계를 구성하는 생물의 종류와 개체수가 안정적으로 유지되는 상태를 무엇이라고 부를까요?</strong>
+    </p>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn-action" style="margin-top:0;" onclick="checkRecoveryQuiz('생물 다양성', this)">생물 다양성</button>
+      <button class="btn-action" style="margin-top:0; background:#1976d2;" onclick="checkRecoveryQuiz('생태계 평형', this)">생태계 평형</button>
+      <button class="btn-action" style="margin-top:0; background:#8e24aa;" onclick="checkRecoveryQuiz('먹이 그물', this)">먹이 그물</button>
+    </div>
+    <p id="m5-recovery-msg" style="font-weight:bold; font-size:0.95rem; margin-top:14px; min-height:1.2rem; text-align:center; line-height: 1.5;"></p>
+    <button class="btn-action" id="btn-go-mission2" style="display:none; width:100%; margin-top:10px; background:#f57f17; font-size:1.05rem;">Mission 2 잠금 해제 ➔</button>
+  </div>
+</div>
+
+<header>
+ 
+  <!-- [NEW] 메인 허브로 돌아가는 버튼 -->
+  <div style="margin-top: 14px;">
+    <button class="btn-action" style="background:#607d8b; padding:8px 16px; font-size:0.95rem; margin:0;" onclick="location.href='index.html'">🏠 메인 허브로 이동</button>
+  </div>
+</header>
+
+
+<main>
+  <div id="stage-1" class="stage-card active">
+    <h2>Mission 1: 식물이 사라지면 생태계는 어떻게 될까?</h2>
+    
+    <div id="m1-step1-box" class="interactive-box" style="text-align: center; padding: 40px 20px;">
+      <h3 style="margin-top: 0; color:#f57f17;">STEP 1. 생태계 기초 퀴즈</h3>
+      <p style="font-size:0.95rem; color:#546e7a; margin-bottom: 24px;">탐구를 시작하기 전, 생태계 먹이사슬의 기초 지식을 테스트합니다!</p>
+      <button class="btn-action" style="font-size: 1.1rem; padding: 14px 28px;" onclick="document.getElementById('m1-quiz-modal').style.display='flex'">도전! 퀴즈 풀기 ➔</button>
+    </div>
+
+    <div id="m1-main-content" style="display: none;">
+      <p>아래 슬라이더로 <strong>식물(생산자)</strong> 개체수를 20% 이하로 줄여 생태계 붕괴를 관찰한 뒤, 다시 100%로 복원시켜 보세요.</p>
+      <div class="interactive-box">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <img src="M1_chain.png" alt="먹이사슬 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.style.display='none'">
+        </div>
+        <div class="slider-control">
+          <label>생산자(식물) 보유량: <span id="val-plant">100%</span></label>
+          <input type="range" id="slider-plant" min="0" max="100" value="100" oninput="updateStage1(this.value); checkSliderRecovery(this.value);">
+        </div>
+        <div class="food-web-display">
+          <div class="trophic-card" id="card-plant">
+            <div class="trophic-title" style="color: #2e7d32;">생산자 (식물)</div>
+            <svg class="trophic-avatar" id="svg-plant" viewBox="0 0 100 100">
+              <path d="M25 80 L75 80 L68 95 L32 95 Z" fill="#8d6e63"/>
+              <path d="M50 80 Q50 45 50 30" stroke="#388e3c" stroke-width="5" fill="none"/>
+              <path id="plant-leaves" d="M50 60 Q30 50 25 35 Q40 35 50 50 Q60 35 75 35 Q70 50 50 60 M50 40 Q40 20 50 10 Q60 20 50 40" fill="#4caf50"/>
+            </svg>
+            <div class="trophic-status-text" id="status-plant-text">번성 (100%)</div>
+            <div class="trophic-bar-wrap"><div class="trophic-bar" id="bar-plant" style="background:#4caf50; width:100%;"></div></div>
+          </div>
+          <div class="chain-arrow">➔</div>
+          <div class="trophic-card" id="card-herb">
+            <div class="trophic-title" style="color: #f57f17;">1차 소비자 (토끼)</div>
+            <svg class="trophic-avatar" id="svg-herb" viewBox="0 0 100 100">
+              <ellipse cx="40" cy="25" rx="6" ry="18" fill="#ffccbc" stroke="#d7ccc8" stroke-width="2"/>
+              <ellipse cx="60" cy="25" rx="6" ry="18" fill="#ffccbc" stroke="#d7ccc8" stroke-width="2"/>
+              <circle cx="50" cy="62" r="24" fill="#efebe9"/>
+              <circle cx="50" cy="50" r="18" fill="#ffffff" stroke="#d7ccc8" stroke-width="2"/>
+              <circle cx="44" cy="48" r="2.5" fill="#3e2723"/>
+              <circle cx="56" cy="48" r="2.5" fill="#3e2723"/>
+              <polygon points="48,54 52,54 50,57" fill="#f48fb1"/>
+            </svg>
+            <div class="trophic-status-text" id="status-herb-text">건강 (100%)</div>
+            <div class="trophic-bar-wrap"><div class="trophic-bar" id="bar-herb" style="background:#ff9800; width:100%;"></div></div>
+          </div>
+          <div class="chain-arrow">➔</div>
+          <div class="trophic-card" id="card-carn">
+            <div class="trophic-title" style="color: #c62828;">2차 소비자 (늑대)</div>
+            <svg class="trophic-avatar" id="svg-carn" viewBox="0 0 100 100">
+              <polygon points="25,40 38,15 48,35" fill="#78909c"/>
+              <polygon points="75,40 62,15 52,35" fill="#78909c"/>
+              <polygon points="25,40 75,40 50,82" fill="#cfd8dc"/>
+              <polygon points="36,44 44,46 40,49" fill="#e65100"/>
+              <polygon points="64,44 56,46 60,49" fill="#e65100"/>
+              <polygon points="46,70 54,70 50,75" fill="#212121"/>
+            </svg>
+            <div class="trophic-status-text" id="status-carn-text">최상위 포식 (100%)</div>
+            <div class="trophic-bar-wrap"><div class="trophic-bar" id="bar-carn" style="background:#f44336; width:100%;"></div></div>
+          </div>
+        </div>
+        <div class="status-screen" id="status-eco">
+          [대기 상태] 산소(O₂): 21% | CO₂: 0.04%<br>
+          [생태계 평형] 1차 생산자의 유기물 합성으로 초식·육식 동물이 최적 균형을 유지합니다.
+        </div>
+        <p style="font-size:0.8rem; color:#78909c; text-align:center; margin-top:12px;">※ 생태계의 연쇄 영향을 이해하기 위한 단순화된 모형입니다.</p>
+      </div>
+    </div>
+  </div>
+</main>
+<canvas id="confetti-canvas"></canvas>
+<script>
+  function allowDropM1(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-over-m3'); }
+  function dragM1(ev) { ev.dataTransfer.setData("text/plain", ev.target.id); }
+  function dropM1(ev) {
+    ev.preventDefault(); ev.currentTarget.classList.remove('drag-over-m3');
+    const el = document.getElementById(ev.dataTransfer.getData("text/plain"));
+    if (el && el.classList.contains('m3-badge')) {
+      if (ev.currentTarget.id === 'm1-dropzone' || ev.currentTarget.id === 'm1-pool') ev.currentTarget.appendChild(el);
+    }
+  }
+</script>
+</body>
+</html>

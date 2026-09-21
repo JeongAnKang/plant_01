@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>미션 3: 식물의 숨</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <script defer src="js/main.js"></script>
+  <script defer src="js/mission3.js"></script>
+
+  <style>
+    /* 기본 레이아웃 및 디자인 */
+    body, html {
+      min-height: 100vh; margin: 0; display: flex; flex-direction: column;
+      font-family: 'Pretendard', sans-serif;
+      background: linear-gradient(135deg, #1a3c23 0%, #3a5a40 100%);
+      position: relative;
+    }
+
+    .top-bar { position: absolute; top: 20px; left: 20px; z-index: 100; }
+    .back-btn {
+      background-color: rgba(255, 255, 255, 0.85); color: #1a3c23; text-decoration: none;
+      padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4);
+      backdrop-filter: blur(8px); display: inline-flex; align-items: center; transition: 0.3s;
+    }
+    .back-btn:hover { background-color: #ffffff; transform: translateY(-2px); }
+
+    .mission-container {
+      flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 80px 20px 40px 20px; box-sizing: border-box;
+    }
+
+    .mission-card {
+      background: #ffffff; padding: 40px 30px; border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 850px; width: 100%;
+    }
+
+    .mission-header-box {
+      background-color: #f1f8f4; padding: 35px 20px; border-radius: 12px;
+      border: 1px solid #e2efe6; margin-bottom: 25px; text-align: center;
+    }
+    .mission-header-box h2 { color: #1a3c23; margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .mission-header-box hr { border: 0; border-top: 1px solid #dcebdb; margin: 18px auto; width: 95%; }
+    .mission-header-box p { color: #4a5d4e; font-size: 1.05rem; margin: 0; font-weight: 500; }
+
+    /* 직사각형 스텝 버튼 */
+    .step-indicator { display: flex; gap: 8px; justify-content: space-between; margin-bottom: 35px; width: 100%; }
+    .step-item {
+      flex: 1; background-color: #f4f5f6; color: #b0b8c1; padding: 12px 5px;
+      border-radius: 6px; font-size: 0.85rem; font-weight: 700; text-align: center;
+      line-height: 1.4; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent;
+    }
+    .step-item.active { background-color: #2e7d32; color: #ffffff; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); transform: translateY(-2px); }
+    .step-item.completed { background-color: #e8f5e9; color: #388e3c; border: 1px solid #c8e6c9; }
+
+    /* 퀴즈 박스 및 입력창 스타일 */
+    .quiz-box {
+      background: #e8f5e9; border: 1px solid #a5d6a7; padding: 20px;
+      border-radius: 12px; margin-bottom: 15px;
+    }
+    .quiz-question { font-weight: bold; font-size: 1.05rem; color: #1b5e20; margin-bottom: 10px; display: block; line-height: 1.5; }
+    .blank-input {
+      text-align: center; font-weight: bold; color: #1b5e20; border: 1px solid #b0bec5;
+      border-bottom: 2px solid #2e7d32; border-radius: 4px; padding: 6px; font-size: 1rem;
+      outline: none; background: #ffffff; transition: 0.2s;
+    }
+    .blank-input:focus { border-bottom: 2px solid #f57f17; background: #fffde7; }
+    
+    .text-line { font-size: 1rem; color: #263238; line-height: 2; word-break: keep-all; }
+
+    /* Step 3 낮/밤 토글 영역 */
+    .day-night-container {
+      border-radius: 12px; transition: 0.5s; padding: 20px; text-align: center;
+      border: 2px solid #cfd8dc; position: relative; overflow: hidden;
+    }
+    .dn-day { background: #e3f2fd; color: #0277bd; border-color: #90caf9; }
+    .dn-night { background: #263238; color: #eceff1; border-color: #546e7a; }
+    
+    .toggle-btn {
+      background: #ffffff; border: 2px solid #b0bec5; padding: 8px 20px;
+      border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s;
+      font-size: 1rem; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .toggle-btn:hover { background: #eceff1; }
+
+    /* Step 4 드래그 앤 드롭 테이블 */
+    .comp-table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+    .comp-table th, .comp-table td { border: 1px solid #cfd8dc; padding: 10px; text-align: center; vertical-align: middle; }
+    .comp-table th { background: #e8f5e9; color: #1b5e20; font-size: 0.95rem; }
+    .comp-table td:first-child { font-weight: bold; background: #f1f8f4; color: #2e7d32; width: 25%; }
+    
+    .dropzone {
+      min-height: 45px; background: #f8fafc; border: 2px dashed #b0bec5;
+      border-radius: 6px; display: flex; justify-content: center; align-items: center;
+      transition: 0.2s; padding: 4px;
+    }
+    .dropzone.hover { background: #e0f2f1; border-color: #00897b; }
+    
+    .ans-badge {
+      display: inline-block; padding: 6px 12px; background: #ffffff;
+      border: 1px solid #90a4ae; border-radius: 20px; font-size: 0.85rem; font-weight: bold;
+      color: #37474f; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; margin: 4px;
+    }
+    .ans-badge:active { cursor: grabbing; transform: scale(0.95); }
+    .ans-badge.selected { background: #ffeb3b; border-color: #fbc02d; transform: scale(1.05); }
+
+    .badge-pool {
+      background: #eceff1; padding: 15px; border-radius: 12px; margin-top: 20px;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border: 1px solid #cfd8dc;
+    }
+  </style>
+</head>
+<body>
+<body>
+    <!-- 🚧 리모델링 공사 중 오버레이 (임시) 🚧 -->
+    <div id="remodeling-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f1f8f4; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
+        <div style="font-size: 5rem; margin-bottom: 10px;">🚧🌱</div>
+        <h2 style="color: #2e7d32; font-size: 2.2rem; margin: 0 0 15px 0;">리모델링 중입니다</h2>
+        <p style="color: #455a64; font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; font-family: 'Pretendard', sans-serif;">
+            더욱 재미있고 유익한 탐구를 위해<br>현재 미션을 보완하고 있습니다.<br>조금만 기다려 주세요!
+        </p>
+        <button style="background: #f57f17; color: white; border: none; padding: 16px 32px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); font-family: 'Pretendard', sans-serif;" onclick="location.href='index.html'">
+            ⬅ 식물연구소로 돌아가기
+        </button>
+    </div>
+    <!-- // 리모델링 화면 끝 -->
+
+    <!-- 기존 상단 바, 메인 컨텐츠 등 시작... -->
+   
+
+<div class="top-bar">
+  <a href="index.html" class="back-btn">⬅ 식물 연구소로 돌아가기</a>
+</div>
+
+<!-- Step 4 뱃지 터치 모달창 -->
+<div class="modal-overlay" id="badge-modal" style="display:none; z-index: 900;">
+  <div class="modal-card" style="max-width: 350px; text-align: center;">
+    <h3 style="color:#2e7d32; margin-top:0;">배치할 곳을 선택하세요</h3>
+    <p id="selected-badge-name" style="font-weight:bold; font-size:1.1rem; color:#f57f17; margin-bottom: 20px;"></p>
+    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
+      <button class="btn-action" style="flex:1; background:#4caf50;" onclick="placeBadgeTarget('photo')">광합성 칸</button>
+      <button class="btn-action" style="flex:1; background:#2196f3;" onclick="placeBadgeTarget('resp')">호흡 칸</button>
+    </div>
+    <button class="btn-action" style="width:100%; background:#cfd8dc; color:#333;" onclick="closeBadgeModal()">취소</button>
+  </div>
+</div>
+<!-- Step 1 호흡(세포 소기관) 퀴즈 모달창 -->
+<div class="modal-overlay" id="respiration-modal" style="display:none; z-index: 1000;">
+  <div class="modal-card" style="max-width: 450px; text-align: center;">
+    <h3 style="color:#2e7d32; margin-top:0; border-bottom: 2px dashed #c8e6c9; padding-bottom: 10px;">🔬 세포의 에너지 공장</h3>
+    
+    <!-- 식물 세포 이미지 -->
+    <img src="images/PlantCell.png" alt="식물 세포 이미지" style="width:100%; border-radius:8px; margin-bottom:15px; border:1px solid #cfd8dc; background:#f1f8f4;" onerror="this.src='https://via.placeholder.com/400x250/e8f5e9/2e7d32?text=식물+세포+이미지(준비중)'">
+    
+    <!-- 💡 새롭게 추가된 사전 학습(설명) 영역 -->
+    <div style="background:#f8fafc; padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 20px; border: 2px solid #e2e8f0; line-height: 1.7; font-size: 0.95rem; word-break: keep-all;">
+      동물뿐만 아니라 식물도 세포 속의 <strong style="color:#d32f2f; font-size: 1.05rem;">마이토콘드리아</strong>에서 광합성으로 만들어진 <strong style="color:#1976d2;">포도당</strong>과 <strong style="color:#1976d2;">산소</strong>를 사용하여 <strong style="color:#f57f17; font-size: 1.05rem;">에너지</strong>를 얻습니다.<br>
+      이때 <strong style="color:#795548;">이산화 탄소</strong>와 <strong style="color:#0288d1;">물</strong>이 생성되는데, 이를 <strong style="color:#2e7d32; font-size: 1.1rem; background:#e8f5e9; padding:2px 6px; border-radius:4px;">호흡</strong>이라고 합니다.
+    </div>
+
+    <!-- 확인 질문 영역 -->
+    <p style="font-weight:bold; color:#37474f; font-size:1.05rem; margin-top: 0;">
+      [확인 퀴즈] 세포 내에서 양분을 분해하여<br><span style="color:#e65100;">에너지를 얻는 곳</span>은 어디일까요?
+    </p>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+      <button class="btn-action org-btn" style="background:#cfd8dc; color:#333;" onclick="checkCellOrganelle(this, '핵')">핵</button>
+      <button class="btn-action org-btn" style="background:#cfd8dc; color:#333;" onclick="checkCellOrganelle(this, '세포막')">세포막</button>
+      <button class="btn-action org-btn" style="background:#cfd8dc; color:#333;" onclick="checkCellOrganelle(this, '마이토콘드리아')">마이토콘드리아</button>
+      <button class="btn-action org-btn" style="background:#cfd8dc; color:#333;" onclick="checkCellOrganelle(this, '엽록체')">엽록체</button>
+    </div>
+    
+    <p id="resp-modal-msg" style="font-weight:bold; min-height: 1.2em; margin-bottom:15px; font-size: 0.95rem;"></p>
+    <button id="btn-close-resp" class="btn-action" style="width:100%; background:#4caf50; display:none;" onclick="closeRespirationModal()">정답! 확인 후 닫기</button>
+  </div>
+</div>
+
+<main class="mission-container">
+  <div class="mission-card">
+    
+    <div class="mission-header-box">
+      <h2>Mission 3: 식물의 숨</h2>
+      <hr>
+      <p>식물이 생명 활동을 위해 어떻게 에너지를 얻고 교환하는지 탐구해보세요.</p>
+    </div>
+    
+    <div class="step-indicator" id="m3-indicator">
+      <div class="step-item active" id="m3-dot-1">Step 1<br>호흡</div>
+      <div class="step-item" id="m3-dot-2">Step 2<br>상호 관계</div>
+      <div class="step-item" id="m3-dot-3">Step 3<br>낮과 밤</div>
+      <div class="step-item" id="m3-dot-4">Step 4<br>종합 비교</div>
+      <div class="step-item" id="m3-dot-5">Step 5<br>최종 완료</div>
+    </div>
+    
+    <!-- ========================================== -->
+    <!-- STEP 1: 호흡이란? -->
+    <!-- ========================================== -->
+    <div class="interactive-box" id="stage3-step1">
+      <h3 style="margin-top: 0; color: #2e7d32;">STEP 1. 생물은 어떻게 살아갈까?</h3>
+      
+      <!-- Q1 -->
+      <div class="quiz-box">
+        <label class="quiz-question">Q1. 사람이 숨을 쉴 때 마시는 기체와 내쉬는 기체는 각각 무엇인가?</label>
+        <div class="text-line">
+          마시는 기체: ( <input type="text" id="m3-q1-in" class="blank-input" style="width: 100px;"> ) <br>
+          내쉬는 기체: ( <input type="text" id="m3-q1-out" class="blank-input" style="width: 100px;"> )
+        </div>
+      </div>
+
+      <!-- Q2 (예/아니오) -->
+      <div class="quiz-box">
+        <label class="quiz-question">Q2. 식물도 동물처럼 숨을 쉴까?</label>
+        <div class="text-line text-center" style="display: flex; gap: 10px;">
+           <button class="btn-action" id="btn-q2-yes" style="background:#cfd8dc; flex:1;" onclick="selectQ2('예')">예</button>
+           <button class="btn-action" id="btn-q2-no" style="background:#cfd8dc; flex:1;" onclick="selectQ2('아니오')">아니오</button>
+           <input type="hidden" id="m3-q2-ans" value="">
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="quiz-box">
+        <label class="quiz-question">Q3. 모든 생물은 왜 호흡하지 않으면 죽을까?</label>
+        <div class="text-line">
+          모든 생물은 살아가기 위해 ( <input type="text" id="m3-q3" class="blank-input" style="width: 100px;" placeholder="ㅇㄴㅈ"> )가 필요하기 때문이다.
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top: 20px;">
+        <!-- 버튼 클릭 시 모달창까지 자동으로 연계되도록 JS에서 처리 -->
+        <button class="btn-action" onclick="checkM3Step1()" style="padding: 14px 30px; font-size: 1.1rem; width: 100%;">정답 확인</button>
+        <p id="m3-s1-msg" style="margin:15px 0 0; font-weight:bold; font-size:1.05rem; min-height:1.2rem;"></p>
+        <button class="btn-action" id="btn-go-step2" style="background:#f57f17; display:none; margin-top:15px; width: 100%; padding: 14px; font-size: 1.05rem;">다음 Step 2 가기 ➔</button>
+      </div>
+    </div>
+    
+    <!-- ========================================== -->
+    <!-- STEP 2: 호흡과 광합성 모식도 완성하기 -->
+    <!-- ========================================== -->
+    <div class="interactive-box" id="stage3-step2" style="display:none;">
+      <h3 style="margin-top: 0; color: #2e7d32;">STEP 2. 호흡과 광합성 모식도 완성하기</h3>
+      <p style="font-size: 0.95rem; color: #546e7a;">아래 이미지의 알맞은 빈칸 위로 뱃지를 직접 드래그하여 완성하세요.</p>
+      
+      <div style="position:relative; width:100%; max-width:650px; margin: 15px auto;">
+          <img src="images/M3_s02_relation.png" alt="호흡과 광합성 관계 모식도" style="width:100%; display:block; border-radius:12px; border:1px solid #cfd8dc; box-shadow: 0 4px 10px rgba(0,0,0,0.05);" onerror="this.style.background='#f1f8e9';this.style.height='300px';this.alt='images/M3_s02_relation.png 이미지 영역';">
+          
+          <div class="m3s2-dz dropzone" id="dz-r1" data-target="저장" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="position:absolute; top:32%; left:10%; width:7%; height:18%; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; border:2px dashed #81c784; border-radius:6px; padding:0;"></div>
+          <div class="m3s2-dz dropzone" id="dz-r2" data-target="방출" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="position:absolute; top:32%; left:80%; width:7%; height:18%; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; border:2px dashed #81c784; border-radius:6px; padding:0;"></div>
+          <div class="m3s2-dz dropzone" id="dz-r3" data-target="M3_s02_r3_glucose" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="position:absolute; top:7%; left:50%; width:10%; height:18%; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; border:2px dashed #81c784; border-radius:6px; padding:0;"></div>
+          <div class="m3s2-dz dropzone" id="dz-r4" data-target="M3_s02_r4_CO2" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="position:absolute; top:73%; left:50%; width:10%; height:18%; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; border:2px dashed #81c784; border-radius:6px; padding:0;"></div>
+          <div class="m3s2-dz dropzone" id="dz-r5" data-target="미토콘드리아" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="position:absolute; top:50%; left:60%; width:22%; height:15%; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; border:2px dashed #81c784; border-radius:6px; padding:0;"></div>
+          <div class="m3s2-dz dropzone" id="dz-r6" data-target="엽록체" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="position:absolute; top:50%; left:30%; width:18%; height:15%; background:rgba(255,255,255,0.6); display:flex; justify-content:center; align-items:center; border:2px dashed #81c784; border-radius:6px; padding:0;"></div>
+      </div>
+
+      <div class="badge-pool" id="m3s2-badge-pool" ondrop="dropM3S2(event)" ondragover="allowDrop(event)" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; background:#eceff1; padding:15px; border-radius:12px; min-height: 80px;">
+          <div class="ans-badge" id="b-r1" draggable="true" ondragstart="drag(event)" data-ans="저장" style="padding:10px 15px; border:2px solid #ffb74d; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#fff3e0; font-weight:bold; color:#e65100; font-size:0.95rem; cursor:pointer;">저장</div>
+          <div class="ans-badge" id="b-r2" draggable="true" ondragstart="drag(event)" data-ans="방출" style="padding:10px 15px; border:2px solid #64b5f6; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#e3f2fd; font-weight:bold; color:#0d47a1; font-size:0.95rem; cursor:pointer;">방출</div>
+          <div class="ans-badge" id="b-r3" draggable="true" ondragstart="drag(event)" data-ans="M3_s02_r3_glucose" style="padding:0; overflow:hidden; border:2px solid #b0bec5; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#fff; width:70px; height:70px;">
+              <img src="images/M3_s02_r3_glucose.png" style="width:100%; height:100%; object-fit:contain; pointer-events:none;" alt="포도당">
+          </div>
+          <div class="ans-badge" id="b-r4" draggable="true" ondragstart="drag(event)" data-ans="M3_s02_r4_CO2" style="padding:0; overflow:hidden; border:2px solid #b0bec5; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#fff; width:70px; height:70px;">
+              <img src="images/M3_s02_r4_CO2.png" style="width:100%; height:100%; object-fit:contain; pointer-events:none;" alt="이산화탄소">
+          </div>
+          <div class="ans-badge" id="b-r5" draggable="true" ondragstart="drag(event)" data-ans="미토콘드리아" style="padding:10px 15px; border:2px solid #a5d6a7; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#e8f5e9; font-weight:bold; color:#1b5e20; font-size:0.95rem; cursor:pointer;">미토콘드리아</div>
+          <div class="ans-badge" id="b-r6" draggable="true" ondragstart="drag(event)" data-ans="엽록체" style="padding:10px 15px; border:2px solid #81c784; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#f1f8e9; font-weight:bold; color:#33691e; font-size:0.95rem; cursor:pointer;">엽록체</div>
+      </div>
+
+      <div class="quiz-box" style="margin-top: 20px;">
+        <label class="quiz-question">📝 관계 정리하기</label>
+        <div class="text-line">
+          1. 광합성은 빛에너지를 포도당에 ( <select id="m3-s2-q1" class="blank-input" style="width:120px;"><option value="">선택</option><option value="저장">저장</option><option value="방출">방출</option></select> )하는 과정이다.<br>
+          2. 호흡은 포도당을 분해하여 생명활동에 필요한 에너지를 ( <select id="m3-s2-q2" class="blank-input" style="width:120px;"><option value="">선택</option><option value="저장">저장</option><option value="생산">생산(방출)</option></select> )하는 과정이다.
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top: 20px;">
+        <button class="btn-action" onclick="checkM3Step2()" style="padding: 14px 30px; font-size: 1.1rem; width: 100%;">모식도 및 정답 확인</button>
+        <p id="m3-s2-msg" style="margin:15px 0 0; font-weight:bold; font-size:1.05rem; min-height:1.2rem;"></p>
+        <button class="btn-action" id="btn-go-step3" style="background:#f57f17; display:none; margin-top:15px; width: 100%; padding: 14px; font-size: 1.05rem;">다음 Step 3 가기 ➔</button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STEP 3: 낮과 밤의 기체 출입 -->
+    <!-- ========================================== -->
+    <div class="interactive-box" id="stage3-step3" style="display:none;">
+      <h3 style="margin-top: 0; color: #2e7d32;">STEP 3. 낮과 밤의 기체 출입</h3>
+      <p style="font-size: 0.95rem; color: #546e7a;">버튼을 눌러 낮과 밤의 상태를 확인하고, 겉으로 보기에 어떤 기체가 출입하는지 적어보세요.</p>
+      
+      <div id="dn-bg" class="day-night-container dn-day">
+          <div style="margin-bottom: 20px; text-align: center;">
+              <img id="dn-image" src="images/M3_s03_mn_184_1.png" alt="낮 기체 출입" style="width:100%; max-width:450px; border-radius:12px; border:3px solid #90caf9; transition:0.3s; background:#fff;">
+          </div>
+          <button class="toggle-btn" onclick="toggleDayNight()">
+              <span id="dn-icon">☀️</span> <span id="dn-text">낮으로 설정됨</span>
+          </button>
+          <div style="margin-top: 20px; font-weight:bold; font-size: 1.1rem;">
+              <span id="dn-status-photo">광합성량 > 호흡량</span>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.95rem; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+              <span id="dn-gas-in">↓ 이산화 탄소 흡수</span> <br>
+              <span id="dn-gas-out">↑ 산소 방출</span>
+          </div>
+      </div>
+
+      <div class="quiz-box" style="margin-top: 15px;">
+        <label class="quiz-question">📝 관찰 결과 정리</label>
+        <div class="text-line" style="font-size:0.95rem;">
+          <strong>[낮 ☀️]</strong> 광합성량 ( <select id="m3-s3-q1" class="blank-input"><option value="">선택</option><option value=">">></option><option value="<"><</option><option value="=">=</option></select> ) 호흡량<br>
+          ➔ 겉보기 흡수 기체: ( 
+          <select id="m3-s3-q2" class="blank-input" style="width: 105px;">
+            <option value="">선택</option>
+            <option value="수소">수소</option>
+            <option value="산소">산소</option>
+            <option value="이산화 탄소">이산화 탄소</option>
+            <option value="질소">질소</option>
+          </select> 
+          ), 방출 기체: ( 
+          <select id="m3-s3-q3" class="blank-input" style="width: 105px;">
+            <option value="">선택</option>
+            <option value="수소">수소</option>
+            <option value="산소">산소</option>
+            <option value="이산화 탄소">이산화 탄소</option>
+            <option value="질소">질소</option>
+          </select> 
+          )
+          <hr style="border:0; border-top:1px dashed #a5d6a7; margin: 10px 0;">
+          <strong>[밤 🌙]</strong> 광합성량 ( <select id="m3-s3-q4" class="blank-input"><option value="">선택</option><option value=">">></option><option value="<"><</option><option value="=">=</option></select> ) 호흡량 (광합성 안함)<br>
+          ➔ 겉보기 흡수 기체: ( 
+          <select id="m3-s3-q5" class="blank-input" style="width: 105px;">
+            <option value="">선택</option>
+            <option value="수소">수소</option>
+            <option value="산소">산소</option>
+            <option value="이산화 탄소">이산화 탄소</option>
+            <option value="질소">질소</option>
+          </select> 
+          ), 방출 기체: ( 
+          <select id="m3-s3-q6" class="blank-input" style="width: 105px;">
+            <option value="">선택</option>
+            <option value="수소">수소</option>
+            <option value="산소">산소</option>
+            <option value="이산화 탄소">이산화 탄소</option>
+            <option value="질소">질소</option>
+          </select> 
+          )
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top: 20px;">
+        <button class="btn-action" onclick="checkM3Step3()" style="padding: 14px 30px; font-size: 1.1rem; width: 100%;">정답 확인</button>
+        <p id="m3-s3-msg" style="margin:15px 0 0; font-weight:bold; font-size:1.05rem; min-height:1.2rem;"></p>
+        <button class="btn-action" id="btn-go-step4" style="background:#f57f17; display:none; margin-top:15px; width: 100%; padding: 14px; font-size: 1.05rem;">최후의 대결! Step 4 가기 ➔</button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STEP 4: 종합 비교 (드래그 앤 드롭 / 터치) -->
+    <!-- ========================================== -->
+    <div class="interactive-box" id="stage3-step4" style="display:none;">
+      <h3 style="margin-top: 0; color: #2e7d32;">STEP 4. 최후의 대결: 광합성 vs 호흡</h3>
+      <p style="font-size: 0.9rem; color: #546e7a; margin-top:0;">아래의 뱃지를 드래그하거나 터치하여 알맞은 빈칸에 배치하세요.</p>
+      
+      <table class="comp-table">
+          <tr><th>구분</th><th>광합성</th><th>호흡</th></tr>
+          <tr><td>세포 종류</td>
+              <td><div class="dropzone" id="dz-p-cell" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+              <td><div class="dropzone" id="dz-r-cell" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+          </tr>
+          <tr><td>장소</td>
+              <td><div class="dropzone" id="dz-p-place" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+              <td><div class="dropzone" id="dz-r-place" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+          </tr>
+          <tr><td>시기</td>
+              <td><div class="dropzone" id="dz-p-time" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+              <td><div class="dropzone" id="dz-r-time" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+          </tr>
+          <tr><td>기체 출입</td>
+              <td><div class="dropzone" id="dz-p-gas" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+              <td><div class="dropzone" id="dz-r-gas" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+          </tr>
+          <tr><td>양분</td>
+              <td><div class="dropzone" id="dz-p-nutri" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+              <td><div class="dropzone" id="dz-r-nutri" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+          </tr>
+          <tr><td>에너지</td>
+              <td><div class="dropzone" id="dz-p-eng" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+              <td><div class="dropzone" id="dz-r-eng" ondrop="drop(event)" ondragover="allowDrop(event)"></div></td>
+          </tr>
+      </table>
+
+      <!-- 뱃지 보관함 -->
+      <div class="badge-pool" id="badge-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+          <div class="ans-badge" id="bdg-1" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-1', '엽록체가 있는 세포')" data-ans="p-cell">엽록체가 있는 세포</div>
+          <div class="ans-badge" id="bdg-2" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-2', '모든 살아있는 세포')" data-ans="r-cell">모든 살아있는 세포</div>
+          <div class="ans-badge" id="bdg-3" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-3', '엽록체')" data-ans="p-place">엽록체</div>
+          <div class="ans-badge" id="bdg-4" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-4', '주로 미토콘드리아')" data-ans="r-place">주로 미토콘드리아</div>
+          <div class="ans-badge" id="bdg-5" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-5', '빛이 있는 낮')" data-ans="p-time">빛이 있는 낮</div>
+          <div class="ans-badge" id="bdg-6" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-6', '항상(낮과 밤)')" data-ans="r-time">항상(낮과 밤)</div>
+          <div class="ans-badge" id="bdg-7" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-7', 'CO₂ 흡수, O₂ 방출')" data-ans="p-gas">CO₂ 흡수, O₂ 방출</div>
+          <div class="ans-badge" id="bdg-8" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-8', 'O₂ 흡수, CO₂ 방출')" data-ans="r-gas">O₂ 흡수, CO₂ 방출</div>
+          <div class="ans-badge" id="bdg-11" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-11', '양분 합성')" data-ans="p-nutri">양분 합성</div>
+          <div class="ans-badge" id="bdg-12" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-12', '양분 분해')" data-ans="r-nutri">양분 분해</div>
+          <div class="ans-badge" id="bdg-9" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-9', '저장')" data-ans="p-eng">저장</div>
+          <div class="ans-badge" id="bdg-10" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('bdg-10', '방출')" data-ans="r-eng">방출</div>
+      </div>
+
+      <div style="text-align:center; margin-top: 20px;">
+        <button class="btn-action" onclick="checkM3Step4()" style="padding: 14px 30px; font-size: 1.1rem; width: 100%;">종합 비교표 채점하기</button>
+        <p id="m3-s4-msg" style="margin:15px 0 0; font-weight:bold; font-size:1.05rem; min-height:1.2rem;"></p>
+        <button class="btn-action" id="btn-go-step5" style="background:#f57f17; display:none; margin-top:15px; width: 100%; padding: 14px; font-size: 1.05rem;">최종 완료 ➔</button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STEP 5: 최종 완료 -->
+    <!-- ========================================== -->
+    <div class="interactive-box" id="stage3-step5" style="display:none; text-align:center;">
+        <h2 style="color:#f57f17; font-size: 2rem; margin-top: 20px;">🎉 Mission 3 클리어! 🎉</h2>
+        <p style="font-size: 1.1rem; color: #2e7d32; font-weight: bold; line-height: 1.6;">
+            식물의 호흡과 광합성의 완벽한 조화를 이해했습니다!<br>
+            🔓 Mission 4 (햇빛 금고)의 잠금이 해제되었습니다.
+        </p>
+        
+        <button class="btn-action" style="margin-top: 30px; padding: 16px 30px; font-size: 1.2rem; width: 100%; background:#f57f17;" onclick="location.href='mission4.html'">➔ Mission 4 가기</button>
+        <button class="btn-action" style="margin-top: 10px; padding: 14px 30px; font-size: 1rem; width: 100%; background:#cfd8dc; color: #333;" onclick="location.href='index.html'">연구소 메인으로</button>
+    </div>
+
+  </div>
+</main>
+
+<canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; z-index: 9999;"></canvas>
+
+</body>
+</html>

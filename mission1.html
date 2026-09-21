@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>미션 1: 식물의 밥</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <script defer src="js/main.js"></script>
+  <script defer src="js/mission1.js"></script>
+
+  <style>
+    /* === [품위 있는 고급스러운 전체 화면 레이아웃] === */
+    body, html {
+      min-height: 100vh; 
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a3c23 0%, #3a5a40 100%);
+      position: relative;
+    }
+
+    .top-bar { position: absolute; top: 20px; left: 20px; z-index: 100; }
+
+    .back-btn {
+      background-color: rgba(255, 255, 255, 0.85); color: #1a3c23; text-decoration: none;
+      padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: inline-flex; align-items: center; transition: all 0.3s ease;
+    }
+    .back-btn:hover { background-color: #ffffff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+    .mission-container {
+      flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 80px 20px 40px 20px; box-sizing: border-box;
+    }
+
+    .mission-card { background: #ffffff; padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 800px; width: 100%; }
+
+    /* 밝고 세련된 미션 헤더 박스 */
+    .mission-header-box { background-color: #f1f8f4; padding: 35px 20px; border-radius: 12px; border: 1px solid #e2efe6; margin-bottom: 25px; text-align: center; }
+    .mission-header-box h2 { color: #1a3c23; margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .mission-header-box hr { border: 0; border-top: 1px solid #dcebdb; margin: 18px auto; width: 95%; }
+    .mission-header-box p { color: #4a5d4e; font-size: 1.05rem; margin: 0; font-weight: 500; letter-spacing: -0.3px; }
+
+    /* 직사각형 스텝 버튼 */
+    .step-indicator { display: flex !important; flex-direction: row !important; gap: 8px !important; justify-content: space-between !important; margin-bottom: 35px !important; width: 100% !important; }
+    .step-item { flex: 1 !important; background-color: #f4f5f6 !important; color: #b0b8c1 !important; padding: 12px 5px !important; border-radius: 6px !important; font-size: 0.9rem !important; font-weight: 700 !important; text-align: center !important; line-height: 1.4 !important; cursor: pointer; transition: all 0.2s ease; width: auto !important; height: auto !important; display: block !important; border: 1px solid transparent !important; }
+    .step-item.active { background-color: #2e7d32 !important; color: #ffffff !important; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3) !important; transform: translateY(-2px); }
+    .step-item.completed { background-color: #e8f5e9 !important; color: #388e3c !important; border: 1px solid #c8e6c9 !important; }
+
+    /* 빈칸 퀴즈 입력창 스타일 */
+    .blank-input { text-align: center; font-weight: bold; color: #1b5e20; border: 1px solid #b0bec5; border-bottom: 2px solid #2e7d32; border-radius: 4px; padding: 4px; outline: none; background: #ffffff; }
+    .blank-input:focus { border-bottom: 2px solid #f57f17; }
+
+    /* 기존 실험 콘텐츠(매칭)용 스타일 */
+    .match-item { padding: 8px; background: #f8fafc; border: 2px solid #b0bec5; border-radius: 8px; cursor: pointer; text-align: center; font-size: 0.8rem; font-weight: bold; transition: all 0.2s; position: relative; word-break: keep-all; display: flex; align-items: center; justify-content: center; min-height: 46px; z-index: 2; line-height: 1.3; }
+    .match-item.selected { border-color: #f57f17; background: #fffde7; box-shadow: 0 0 0 2px rgba(245,127,23,0.3); transform: scale(1.02); }
+    .match-item.matched { border-color: #2e7d32; background: #e8f5e9; color: #1b5e20; pointer-events: none; }
+    .match-item.error { border-color: #c62828; background: #ffebee; animation: shake 0.3s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+    /* =======================================================
+       🌿 Step 3 퀴즈 전용 스타일 
+       ======================================================= */
+    .step3-word-btn { background: #ffffff; border: 2px solid #90caf9; border-radius: 8px; padding: 8px 16px; font-size: 1rem; font-weight: bold; color: #1976d2; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .step3-word-btn:hover { background: #e3f2fd; border-color: #1e88e5; }
+    .step3-word-btn:active { transform: scale(0.95); }
+    .step3-blank { display: inline-block; width: 60px; height: 26px; border-bottom: 2px solid #2e7d32; text-align: center; font-weight: bold; color: #1b5e20; cursor: pointer; vertical-align: bottom; background: #f1f8e9; border-radius: 4px 4px 0 0; }
+
+    /* =======================================================
+       🌿 Mission 1 최종 정리: 드래그 앤 드롭 스타일 (최적화)
+       ======================================================= */
+    .m1-badge-pool { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: #f8fafc; border: 1px solid #cfd8dc; padding: 15px; border-radius: 12px; margin-bottom: 20px; min-height: 30px; }
+    
+    .m1-badge {
+      display: inline-block; background: #ffffff; border: 2px solid #81c784; border-radius: 25px;
+      padding: 6px 16px; font-size: 1.05rem; font-weight: 700; color: #37474f;
+      cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); user-select: none;
+      margin: 5px; transition: transform 0.1s;
+      line-height: 1.2 !important; vertical-align: middle; box-sizing: border-box;
+    }
+    .m1-badge:active { cursor: grabbing; transform: scale(1.05); }
+
+    .m1-dropzone {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 100px; height: 38px; vertical-align: middle; 
+      background: #f8fcf8; border: 2px dashed #b0bec5; border-radius: 25px;
+      margin: 0 4px; box-sizing: border-box; transition: all 0.2s;
+    }
+    .drag-over-m1 { background: #e3f2fd !important; border-color: #1e88e5 !important; }
+
+    /* 빈칸 안에 뱃지가 들어가면 테두리와 배경 날림 */
+    .m1-dropzone:has(.m1-badge) { border: none; background-color: transparent; min-width: auto; height: auto; margin: 0 4px; }
+    /* 들어간 뱃지 디자인 유지 (그림자만 제거) */
+    .m1-dropzone .m1-badge { margin: 0; padding: 6px 16px; box-shadow: none; }
+
+    /* 스르륵 나타나는 애니메이션 클래스 */
+    .summary-hidden { display: none; opacity: 0; transition: opacity 0.5s ease-in-out; }
+    .summary-visible { display: block; opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar"><a href="index.html" class="back-btn">⬅ 식물 연구소로 돌아가기</a></div>
+
+<!-- 모달 창 영역 (뱃지 설명용 모달) -->
+<div class="modal-overlay" id="exp-modal" style="display: none;">
+  <div class="modal-card">
+    <h3 id="modal-title">물질 탐구 정보</h3>
+    <div id="modal-img-container" style="text-align: center; display: none; margin: 12px 0;"><img id="modal-img" src="" alt="실험 이미지" style="max-width: 100%; max-height: 220px; border-radius: 8px; border: 1px solid #cfd8dc; object-fit: contain;"></div>
+    <p id="modal-desc"></p>
+    <div class="exp-box" id="modal-exp" style="background: var(--primary-light); padding: 14px; border-radius: 6px; font-size: 0.95rem; border-left: 4px solid var(--primary); margin: 12px 0; line-height: 1.6;"></div>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="btn-action" id="btn-move-factory" style="flex:1; margin-top:0;" onclick="moveBadgeToFactory()">⬇️ 공장으로 투입하기</button>
+      <button class="modal-close" style="margin:0;" onclick="closeModal()">✕ 닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모달 창 영역 (Step 2 엽록체 관찰 퀴즈) -->
+<div class="modal-overlay" id="stage2-image-modal" style="display: none;">
+  <div class="step-image-modal-card" style="max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px;">
+    <div class="step-image-header" style="border-bottom: 2px solid #e8f5e9; padding-bottom: 10px;">
+      <h3 style="margin: 0; color: #1b5e20;">🔬 엽록체 관찰 퀴즈</h3>
+      <button class="modal-close" style="margin:0; padding:4px 10px;" onclick="closeStage2ImageModal()">✕ 닫기</button>
+    </div>
+    <div class="step-image-body" style="padding: 15px 0; text-align: center;">
+      <div id="custom-ch-quiz">
+        <img src="images/chloroplast.png" alt="엽록체 사진" style="width:100%; max-width:400px; border-radius:8px; border:1px solid #cfd8dc; object-fit:contain; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+        <p style="margin-top:15px; font-size:1rem; color:#2c4c34; line-height:1.8; text-align:center; background:#e8f5e9; padding:15px; border-radius:8px; word-break:keep-all;">
+          ( <input type="text" id="ch-q1" class="blank-input" style="width:70px;" placeholder="정답"> )는 식물세포에 있는 광합성이 일어나는 장소이고, ( <input type="text" id="ch-q2" class="blank-input" style="width:70px;" placeholder="정답"> )는 엽록체 속에 있는 색소로 광합성에 필요한 빛에너지를 흡수하는 색소이다.
+        </p>
+        <p id="ch-msg" style="font-weight:bold; font-size:0.95rem; margin-top:5px; min-height:1.2em;"></p>
+      </div>
+    </div>
+    <div class="step-image-footer" style="text-align: center;">
+      <button type="button" class="btn-action" id="btn-ch-check" style="margin:0; padding:12px 24px; font-size: 1rem; width: 100%;" onclick="checkChloroplastQuiz()">정답 확인</button>
+      <button type="button" class="btn-action" id="btn-ch-next" style="display:none; margin:0; padding:12px 24px; font-size: 1rem; width: 100%; background:#f57f17;" onclick="goCustomStep(3); closeStage2ImageModal();">확인 완료 ➔ Step 3으로</button>
+    </div>
+  </div>
+</div>
+
+<!-- 미션 클리어 축하 팝업 -->
+<div class="modal-overlay" id="mission-clear-modal" style="display: none;">
+  <div class="modal-card" style="max-width: 450px; text-align: center; border: 4px solid #fbc02d; background: #fffde7; z-index: 10000;">
+    <h2 style="color: #f57f17; font-size: 1.8rem; margin-top:0;">🎉 미션 클리어! 🎉</h2>
+    <h3 style="color: #2e7d32; margin-top: 0; margin-bottom: 16px;">식물의 밥(Mission 1) 수사를 완벽하게 마쳤습니다.</h3>
+    <p style="font-size: 1.15rem; color: #1976d2; font-weight: bold; margin-bottom: 24px;">🔓 Mission 2 (최적 조건)의 잠금이 해제되었습니다!</p>
+    <button class="btn-action" style="font-size: 1.05rem; padding: 14px 28px; width: 100%; background:#f57f17; border:none; border-radius:8px; color:#fff; cursor:pointer;" onclick="location.href='mission2.html'">➔ Mission 2 가기</button>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- 미션 메인 내용 영역 -->
+<!-- ========================================== -->
+<main class="mission-container">
+  <div id="stage-2" class="mission-card stage-card active">
+    
+    <!-- 헤더 박스 -->
+    <div class="mission-header-box">
+      <h2>Mission 1: 식물의 밥</h2>
+      <hr>
+      <p>식물이 어떻게 스스로 양분을 만드는지 탐구해보세요.</p>
+    </div>
+    
+    <!-- 직사각형 인디케이터 -->
+    <div class="step-indicator" id="m1-indicator">
+      <div class="step-item active" id="m1-dot-1">Step 1<br>일용할 양식</div>
+      <div class="step-item" id="m1-dot-2">Step 2<br>공장</div>
+      <div class="step-item" id="m1-dot-3">Step 3<br>원료</div>
+      <div class="step-item" id="m1-dot-4">Step 4<br>기체 </div>
+      <div class="step-item" id="m1-dot-5">Step 5<br>양분</div>
+    </div>
+    
+    <!-- STEP 1 -->
+    <div class="interactive-box" id="stage2-step1">
+      <h3 style="margin-top: 0;">STEP 1. 일용할 양식</h3>
+      <div class="exp-section" style="background:#e8f5e9; border-color:#a5d6a7;">
+        <label style="font-weight:bold; font-size:0.95rem; color:#1b5e20;">질문 1. 인간은 밥을 먹고 자란다. 식물은 무엇으로 자랄까?</label>
+        <input type="text" id="m2-s1-q1" class="organelle-input" style="width:100%; padding:10px; margin-top:10px; border:1px solid #b0bec5; border-radius:6px;" placeholder='힌트: "000 00 00을 먹고 산다"'>
+      </div>
+      <div class="exp-section" style="background:#e8f5e9; border-color:#a5d6a7;">
+        <label style="font-weight:bold; font-size:0.95rem; color:#1b5e20;">질문 2. 식물이 스스로 양분을 만드는 과정을 무엇이라고 하는가?</label>
+        <input type="text" id="m2-s1-q2" class="organelle-input" style="width:100%; padding:10px; margin-top:10px; border:1px solid #b0bec5; border-radius:6px;" placeholder="정답 입력">
+      </div>
+      <div style="text-align:center;">
+        <button class="btn-action" onclick="checkM2Step1()">정답 확인</button>
+        <p id="m2-s1-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.95rem; min-height:1.2rem; line-height: 1.5;"></p>
+        <button class="btn-action" id="btn-go-step2" style="background:#f57f17; display:none; margin-top:12px; width: 100%;">다음 Step 2 가기 ➔</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="interactive-box" id="stage2-step2" style="display: none;">
+      <p style="font-size:0.95rem; color:#1b5e20; font-weight:bold; margin-bottom:4px;">🔍 STEP 2. 식물 세포의 구조와 기능을 알맞게 짝지어 연결하세요!</p>
+      <p style="font-size:0.85rem; color:#546e7a; margin-top:0; margin-bottom:12px;">특히 광합성이 일어나는 장소인 <strong>엽록체</strong>와 빛을 흡수하는 색소인 <strong>엽록소</strong>를 잘 구분해 보세요.</p>
+      <div style="text-align: center; margin-bottom: 12px;"><img src="images/PlantCell.png" alt="식물 세포" style="width: 100%; max-width: 350px; height: auto; border-radius: 8px; border: 1.5px solid #cfd8dc; background: #e8f5e9;" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect width=%22400%22 height=%22300%22 fill=%22%23e8f5e9%22/%3E%3Ctext x=%22200%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%2378909c%22 font-size=%2216%22%3Eimages/PlantCell.png 이미지 영역%3C/text%3E%3C/svg%3E';"></div>
+      <div class="matching-container" id="matching-quiz" style="position: relative; display: flex; justify-content: space-between; align-items: stretch; background: #fff; padding: 16px 10px; border-radius: 8px; border: 1px solid #cfd8dc; margin-bottom: 12px; overflow: hidden; gap: 8px;">
+        <svg id="matching-lines" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></svg>
+        <div class="match-col" id="match-left" style="display: flex; flex-direction: column; gap: 8px; width: 35%; z-index: 2;">
+          <div class="match-item left-item" data-id="nuc" onclick="selectMatchItem(this, 'left')">핵</div>
+          <div class="match-item left-item" data-id="mem" onclick="selectMatchItem(this, 'left')">세포막</div>
+          <div class="match-item left-item" data-id="mit" onclick="selectMatchItem(this, 'left')">마이토콘드리아</div>
+          <div class="match-item left-item" data-id="chl" onclick="selectMatchItem(this, 'left')">엽록체</div>
+          <div class="match-item left-item" data-id="pig" onclick="selectMatchItem(this, 'left')">엽록소</div>
+        </div>
+        <div class="match-col" id="match-right" style="display: flex; flex-direction: column; gap: 8px; width: 62%; z-index: 2;">
+          <div class="match-item right-item" data-id="mem" onclick="selectMatchItem(this, 'right')">세포의 형태 유지 및 물질 출입 조절</div>
+          <div class="match-item right-item" data-id="pig" onclick="selectMatchItem(this, 'right')">엽록체 속에 있는 빛을 흡수하는 색소</div>
+          <div class="match-item right-item" data-id="nuc" onclick="selectMatchItem(this, 'right')">세포의 생명 활동 조절 (유전물질 포함)</div>
+          <div class="match-item right-item" data-id="chl" onclick="selectMatchItem(this, 'right')">광합성을 하는 장소</div>
+          <div class="match-item right-item" data-id="mit" onclick="selectMatchItem(this, 'right')">세포 호흡을 통해 생명 활동에 필요한 에너지 생성</div>
+        </div>
+      </div>
+      <div id="matching-error-msg" style="color:#546e7a; font-weight:bold; margin-top:10px; text-align:center; min-height: 1.5em; line-height: 1.5;">좌우 항목을 터치하여 알맞은 짝을 연결해보세요.</div>
+      <div style="text-align: center; margin-top: 16px;">
+        <button class="btn-action" id="btn-go-step3-from-matching" style="display:none; background:#f57f17; margin: 0 auto; width:100%;">정답 확인 완료! 엽록체 관찰하기 ➔</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="interactive-box" id="stage2-step3" style="display: none;">
+      <p style="font-size:0.95rem; color:#1b5e20; font-weight:bold; margin-bottom: 10px;">✅ STEP 3. 엽록체 공장이 열렸습니다!</p>
+      
+      <div style="text-align: center; margin: 15px 0;">
+        <img src="images/chloroplast.png" alt="엽록체" style="width: 100%; max-width: 300px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+      </div>
+      <p style="font-size: 0.95rem; color: #2c4c34; line-height: 1.6; text-align: center; background: #e8f5e9; padding: 12px; border-radius: 8px; margin-bottom: 20px; word-break: keep-all;">
+        ( <strong>엽록체</strong> )는 식물세포에 있는 광합성이 일어나는 장소이고, ( <strong>엽록소</strong> )는 엽록체 속에 있는 광합성에 필요한 빛에너지를 흡수하는 색소이다.
+      </p>
+
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size:0.85rem; font-weight:bold; color:#78909c;">[ 물질 및 에너지 보관함 ]</div>
+        <div style="font-size:0.85rem; color:#546e7a;">광합성에 필요한 <strong>원료 2가지</strong>와 <strong>에너지 1가지</strong>를 투입하세요.</div>
+      </div>
+
+      <div class="badge-container" id="source-badges" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <span class="badge" id="b-o2" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-o2', '산소')">🫧 산소</span>
+        <span class="badge" id="b-starch" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-starch', '녹말')">🥔 녹말</span>
+        <span class="badge" id="b-water" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-water', '물')">💧 물</span>
+        <span class="badge" id="b-n2" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-n2', '질소')">🧪 질소</span>
+        <span class="badge" id="b-glucose" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-glucose', '포도당')">🍬 포도당</span>
+        <span class="badge" id="b-protein" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-protein', '단백질')">🥚 단백질</span>
+        <span class="badge" id="b-co2" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-co2', '이산화탄소')">💨 이산화탄소</span>
+        <span class="badge" id="b-fat" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-fat', '지방')">🧈 지방</span>
+        <span class="badge" id="b-soil" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-soil', '흙')">🪴 흙</span>
+        <span class="badge" id="b-chem" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-chem', '화학에너지')">🔋 화학에너지</span>
+        <span class="badge" id="b-light" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-light', '빛에너지')">☀️ 빛에너지</span>
+        <span class="badge" id="b-elec" draggable="true" ondragstart="drag(event)" onclick="handleBadgeClick('b-elec', '전기에너지')">⚡ 전기에너지</span>
+      </div>
+      
+      <div style="font-size:0.85rem; font-weight:bold; color:#2e7d32; margin-top:12px;">[ 엽록체 합성 공장 ]</div>
+      
+      <div class="factory-dropzone" id="factory-dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" style="position: relative; border: 3px dashed #81c784; border-radius: 12px; padding: 25px 10px; background-color: #f1f8e9; margin-top: 10px; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="factory-bg-icon" style="pointer-events: none; position: absolute; font-size: 3rem; opacity: 0.15; z-index: 0;">⚙️</div>
+        <div style="z-index:1; font-weight:bold; color:#81c784; pointer-events: none; margin-bottom: 12px;">이곳으로 드래그하여 투입하세요</div>
+        <div class="factory-dropzone-items" id="factory-items" style="z-index:1; width: 100%; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; min-height: 50px;"></div>
+      </div>
+      
+      <button class="btn-action" onclick="runFactory()" style="width:100%; padding:14px; font-size:1.05rem; margin-top: 15px;">합성 가동 🚀</button>
+      <div class="result-msg" id="msg-factory" style="text-align:center;"></div>
+
+      <!-- 💡 Step 3 하단 퀴즈 영역 (합성 가동 성공 시 스르륵 열림) -->
+      <div id="step3-quiz-section" class="summary-hidden" style="margin-top: 25px; border: 2px solid #64b5f6; background-color: #e3f2fd; padding: 20px; border-radius: 12px;">
+        <h3 style="color: #1565c0; margin-top: 0; text-align: center;">🧐 합성 성공! 다음 퀴즈를 풀어보세요.</h3>
+        
+        <!-- Q1 -->
+        <div style="margin-bottom: 15px; padding: 15px; background: #ffffff; border-radius: 8px;">
+          <p style="font-size: 1.05rem; line-height: 1.8; margin-top: 0; word-break: keep-all;">
+            <strong>Q1.</strong> 물은 식물체의 <span id="s3-q1-ans1" class="step3-blank" onclick="clearQ1()"></span> 에서 흡수되어 
+            <span id="s3-q1-ans2" class="step3-blank" onclick="clearQ1()"></span> (을)를 통해 잎까지 온다.<br>
+            <span style="font-size:0.85rem; color:#78909c;">(버튼을 순서대로 눌러 2개를 선택하세요. 빈칸을 터치하면 초기화됩니다.)</span>
+          </p>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap;">
+            <button class="step3-word-btn" onclick="addQ1Word('기공')">기공</button>
+            <button class="step3-word-btn" onclick="addQ1Word('뿌리')">뿌리</button>
+            <button class="step3-word-btn" onclick="addQ1Word('물관')">물관</button>
+            <button class="step3-word-btn" onclick="addQ1Word('체관')">체관</button>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div style="margin-bottom: 15px; padding: 15px; background: #ffffff; border-radius: 8px;">
+          <p style="font-size: 1.05rem; line-height: 1.8; margin-top: 0; word-break: keep-all;">
+            <strong>Q2.</strong> 이산화탄소는 잎의 <span id="s3-q2-ans1" class="step3-blank" onclick="clearQ2()"></span> (을)를 통해 잎으로 온다.<br>
+            <span style="font-size:0.85rem; color:#78909c;">(아래에서 1개를 선택하세요.)</span>
+          </p>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap;">
+            <button class="step3-word-btn" onclick="addQ2Word('기공')">기공</button>
+            <button class="step3-word-btn" onclick="addQ2Word('뿌리')">뿌리</button>
+            <button class="step3-word-btn" onclick="addQ2Word('물관')">물관</button>
+            <button class="step3-word-btn" onclick="addQ2Word('체관')">체관</button>
+          </div>
+        </div>
+        
+        <p id="s3-quiz-msg" style="text-align: center; font-weight: bold; min-height: 1.2rem;"></p>
+        <button id="btn-check-s3" class="btn-action" style="width: 100%; margin-top: 10px;" onclick="checkStep3Quiz()">정답 확인</button>
+      </div>
+
+      <!-- 💡 정답을 맞췄을 때 나타나는 이미지 및 다음 단계 버튼 영역 -->
+      <div id="step3-reward-section" class="summary-hidden" style="margin-top: 20px; text-align: center; background-color: #f1f8e9; padding: 20px; border-radius: 12px; border: 2px solid #81c784;">
+        <h3 style="color: #2e7d32; margin-top: 0; margin-bottom: 15px;">🎉 정답입니다! 잎의 구조를 확인하세요.</h3>
+        
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+          <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cfd8dc; flex: 1; min-width: 120px;">
+            <img src="images/stomata.png" alt="기공" style="width: 100%; height: auto; border-radius: 4px;" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e8f5e9%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%232e7d32%22 font-size=%2214%22 x=%2250%22 y=%2250%22 text-anchor=%22middle%22%3E기공%3C/text%3E%3C/svg%3E'">
+            <div style="font-size: 0.9rem; font-weight: bold; margin-top: 5px; color: #455a64;">기공</div>
+          </div>
+          <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #cfd8dc; flex: 1; min-width: 120px;">
+            <img src="images/leaf.png" alt="잎의 단면" style="width: 100%; height: auto; border-radius: 4px;" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e8f5e9%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%232e7d32%22 font-size=%2214%22 x=%2250%22 y=%2250%22 text-anchor=%22middle%22%3E잎 단면%3C/text%3E%3C/svg%3E'">
+            <div style="font-size: 0.9rem; font-weight: bold; margin-top: 5px; color: #455a64;">잎의 단면</div>
+          </div>
+        </div>
+        
+        <button class="btn-action" style="width: 100%; background: #f57f17; font-size: 1.1rem; padding: 14px;" onclick="goStep4WithConfetti()">Step 4 가기 ➔</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="interactive-box" id="stage2-step4" style="display: none;">
+      <h3>STEP 4: 광합성에 필요한 물질 확인하기</h3>
+      <p style="font-size:0.95rem; margin-top:0;">투명 용기 안에 상추 모종을 넣고 뚜껑을 닫은 후, <strong>이산화 탄소 센서</strong>와 <strong>산소 센서</strong>를 꽂아 빛을 비추며 시간에 따른 기체 농도 변화를 측정합니다.</p>
+      <div style="text-align: center; margin: 14px 0;"><img src="images/O2_CO2_ex.jpg" alt="기체 확인 실험 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.onerror=null; this.src='images/O2_CO2_ex.png';"></div>
+      <div style="margin-bottom:12px; text-align:center;"><button class="btn-action" onclick="runSensorExp()" style="margin-top:0; width:100%; max-width:450px; font-size:1rem;">▶️ 농도 측정 시작</button></div>
+      <div style="background:#fff; border:1px solid #cfd8dc; border-radius:8px; padding:10px; display:flex; justify-content:center;">
+        <canvas id="sensor-chart" width="400" height="220" style="width:100%; max-width:400px; background:#fafafa; border-radius:4px;"></canvas>
+      </div>
+      <div style="margin-top:14px; background:#fffde7; border:1px solid #fff59d; padding:16px; border-radius:8px; text-align:center;">
+          <div style="font-size:0.95rem; font-weight:bold; color:#f57f17; margin-bottom:10px;">💡 더 알아보기 (터치하여 확인하세요)</div>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <span class="badge" style="background:#e3f2fd; border-color:#90caf9;" onclick="showInfoModal('산소와 이산화 탄소 농도', '공기 중 산소는 약 21%, 이산화 탄소는 400ppm(=0.04%) 존재합니다.<br><br>즉 산소는 이산화탄소보다 약 <strong>500배</strong> 농도가 짙습니다.')">🫧💨 산소 & 이산화 탄소 농도</span>
+              <span class="badge" style="background:#e8f5e9; border-color:#a5d6a7;" onclick="showInfoModal('ppm (피피엠)', '100만분의 1을 뜻하는 농도 단위입니다.<br><strong>1ppm = 0.0001%</strong>')">📊 ppm</span>
+          </div>
+      </div>
+      <div class="organelle-quiz-box" style="margin-top:14px; background:#e8f5e9; border:1px solid #a5d6a7; padding:14px; border-radius:8px;">
+        <label style="font-weight:bold; font-size:0.95rem; color:#1b5e20;">📝 결론 정리: 각 기체의 농도 변화로 알 수 있는 것은 무엇인가요?</label>
+        <input type="text" id="exp1-conclusion" class="organelle-input" style="width:100%; padding:10px; margin-top:10px; border:1px solid #b0bec5; border-radius:6px;" placeholder="예: 광합성 과정에서 OO가 흡수되고 OO가 방출된다.">
+        <button class="btn-action" onclick="checkExp1()" style="margin-top:10px;">결론 확인</button>
+        <p id="exp1-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.95rem; min-height:1.2rem; line-height:1.5;"></p>
+        <div style="text-align: right; margin-top: 14px;"><button class="btn-action" id="btn-go-step5" style="background:#f57f17; display:none;">다음 Step 5 가기 ➔</button></div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="interactive-box" id="stage2-step5" style="display: none;">
+      <h3>STEP 5: 광합성 산물 확인하기</h3>
+      
+      <!-- ========================================== -->
+      <!-- 1) 실험 설계 영역 -->
+      <!-- ========================================== -->
+      <div id="step5-part1">
+        <h4 style="color: #2e7d32; margin-top: 0;">1) 실험 설계</h4>
+        <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #cfd8dc; line-height: 1.8; font-size: 0.95rem;">
+          <p style="margin: 0 0 10px 0;">1. 두 상추 중 하나에만 어둠상자를 씌워 하루 동안 둡니다.</p>
+          
+          <!-- 💡 2번 문장 줄바꿈 제거 -->
+          <p style="margin: 0 0 10px 0;">2. 잎을 잘라 <strong>에탄올이 든 시험관에 넣고 물중탕</strong>하여 <span id="s5-q1-ans" class="step3-blank" style="width:140px;" onclick="clearS5Q(1)"></span> 합니다.</p>
+          
+          <!-- 💡 3번 문장 줄바꿈 제거 및 들여쓰기 묶음 처리 -->
+          <p style="margin: 0;">3. <strong>아이오딘-아이오딘화 칼륨 용액</strong>을 떨어뜨립니다.<br>
+            <span style="display: inline-block; margin-left: 1em;">
+              <span style="font-size: 0.9rem; color: #546e7a;">※ 이 용액(원래 색깔: 옅은 황갈색)은</span>
+              <span id="s5-q2-ans" class="step3-blank" style="width:60px;" onclick="clearS5Q(2)"></span> 과(와) 반응하면 
+              <span id="s5-q3-ans" class="step3-blank" style="width:70px;" onclick="clearS5Q(3)"></span> (으)로 변합니다.
+            </span>
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 15px 0;">
+          <img src="images/photo_product.jpg" alt="광합성 산물 확인 실험 모식도" style="width: 100%; max-width: 450px; border-radius: 8px; border: 1.5px solid #cfd8dc; box-shadow: 0 4px 8px rgba(0,0,0,0.05);" onerror="this.onerror=null; this.src='images/photo_product.png';">
+        </div>
+
+        <!-- 단어 버튼 -->
+        <p style="text-align: center; font-size: 0.85rem; color: #78909c; margin-bottom: 8px;">(버튼을 순서대로 눌러 빈칸을 채우세요. 빈칸 터치 시 초기화)</p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+          <button class="step3-word-btn" onclick="addS5Word('녹말')">녹말</button>
+          <button class="step3-word-btn" onclick="addS5Word('엽록소를 제거(탈색)')">엽록소를 제거(탈색)</button>
+          <button class="step3-word-btn" onclick="addS5Word('포도당')">포도당</button>
+          <button class="step3-word-btn" onclick="addS5Word('청람색')">청람색</button>
+        </div>
+       
+        <p id="s5-part1-msg" style="text-align: center; font-weight: bold; min-height: 1.2rem; margin-top: 10px;"></p>
+        
+        <!-- 💡 수정된 버튼 영역 (빈칸 3개가 다 찰 때까지는 회색으로 클릭 방지) -->
+        <button id="btn-s5-check" class="btn-action" style="width: 100%; margin-top: 5px; background: #b0bec5; cursor: not-allowed;" disabled onclick="checkStep5Part1()">정답 확인 및 결과 보기</button>
+      </div>
+              <!-- ========================================== -->
+      <!-- 2) 결과 및 해석 영역 (처음엔 숨김 처리: summary-hidden) -->
+      <!-- ========================================== -->
+      <div id="step5-part2" class="summary-hidden" style="border-top: 2px dashed #81c784; padding-top: 25px; margin-top: 20px;">
+        <h4 style="color: #2e7d32; margin-top: 0;">2) 결과 및 해석</h4>
+        <p style="font-size:0.95rem; font-weight:bold; color:#e65100; text-align:center; margin: 0 0 15px 0;">(👇 아래 상추 잎 이미지를 터치하여 아이오딘 반응을 확인하세요)</p>
+        
+        <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:140px; text-align:center; background:#fff; padding:12px; border-radius:8px; border:1px solid #cfd8dc;">
+            <h4 style="margin:0 0 10px; font-size:1rem;">☀️ 햇빛을 받은 상추</h4>
+            <div style="position:relative; width:140px; height:140px; margin:0 auto; cursor:pointer;" onclick="revealLeaf('light', this)">
+              <img src="images/lettuce_light_before.jpg" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border:2px solid #a5d6a7; transition:0.3s;" onerror="this.outerHTML=window.fallbackLettuce.pale" alt="에탄올 탈색 잎">
+              <div style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:0.85rem; color:#fff; text-shadow:1px 1px 3px #000; font-weight:bold; pointer-events:none;">터치하여 반응 확인</div>
+            </div>
+          </div>
+          <div style="flex:1; min-width:140px; text-align:center; background:#fff; padding:12px; border-radius:8px; border:1px solid #cfd8dc;">
+            <h4 style="margin:0 0 10px; font-size:1rem;">🌑 어둠상자를 씌운 상추</h4>
+            <div style="position:relative; width:140px; height:140px; margin:0 auto; cursor:pointer;" onclick="revealLeaf('dark', this)">
+               <img src="images/lettuce_dark_before.jpg" style="width:100%; height:100%; object-fit:cover; border-radius:8px; border:2px solid #a5d6a7; transition:0.3s;" onerror="this.outerHTML=window.fallbackLettuce.pale" alt="에탄올 탈색 잎">
+               <div style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:0.85rem; color:#fff; text-shadow:1px 1px 3px #000; font-weight:bold; pointer-events:none;">터치하여 반응 확인</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="organelle-quiz-box" style="margin-top:14px; background:#e8f5e9; border:1px solid #a5d6a7; padding:14px; border-radius:8px;">
+          <label style="font-weight:bold; font-size:0.95rem; color:#1b5e20;">📝 결론 정리: 빛을 받은 상추에서 나타나는 색깔과 이렇게 색깔이 변한 이유를 쓰시오</label>
+          <textarea id="exp2-conclusion" class="organelle-input" style="width:100%; min-height: 120px; padding:10px; margin-top:10px; border:1px solid #b0bec5; border-radius:6px; resize: vertical; line-height: 1.5; font-family: inherit;" placeholder="예: 빛을 받은 경우에만 ooo을 하여 만들어진 양분이 OO로 저장되어서..."></textarea>
+          <p style="font-size:0.8rem; color:#78909c; margin:6px 0 0;">※ 본 앱의 자동 채점은 핵심 단어 포함 여부만 확인합니다. 문장의 정확성은 선생님께 최종 확인을 받으세요.</p>
+          <button class="btn-action" onclick="checkExp2()" style="margin-top:10px;">결론 확인</button>
+          <p id="exp2-msg" style="margin:10px 0 0; font-weight:bold; font-size:0.95rem; min-height:1.2rem; line-height: 1.5;"></p>
+          
+          <!-- 💡 퀴즈 정답 시 열리는 다음 단계 버튼 -->
+          <div id="stage2-final-btns" style="display:none; text-align:right; margin-top:16px;">
+            <button class="btn-action" style="background:#475569; margin-right:8px;" onclick="resetMission2()">↺ 단계 다시하기</button>
+            <button class="btn-action" style="background:#f57f17;" onclick="showM1FinalSummary()">📝 최종 정리: 광합성의 모든 것 ➔</button>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+      <!-- ========================================== -->
+      <!-- 🌿 아래쪽으로 나타나는 [광합성의 모든 것] 최종 정리 박스 (11칸) -->
+      <!-- ========================================== -->
+      <div id="m1-final-summary" class="summary-hidden" style="margin-top:30px; border: 2px solid #81c784; border-radius: 12px; padding: 25px 20px; background-color: #f1f8e9;">
+        <h3 style="color: #2e7d32; text-align: center; font-size: 1.5rem; margin-top: 0;">🌿 광합성의 모든 것</h3>
+        <p style="text-align: center; color: #546e7a; font-size: 0.95rem; margin-bottom: 10px;">
+          아래 단어들을 빈칸으로 드래그하여 광합성 요약 문장을 완성해 보세요! (함정 단어도 섞여 있습니다)
+        </p>
+
+        <!-- 드래그할 단어들 (Badge Pool) - JS에서 랜덤하게 섞입니다 -->
+        <div class="m1-badge-pool" id="m1-badge-pool" ondrop="dropM1(event)" ondragover="allowDropM1(event)">
+          <div class="m1-badge" id="m1-word-xylem" data-ans="물관" draggable="true" ondragstart="dragM1(event)">🌱 물관</div>
+          <div class="m1-badge" id="m1-word-water" data-ans="물" draggable="true" ondragstart="dragM1(event)">💧 물</div>
+          <div class="m1-badge" id="m1-word-co2" data-ans="이산화탄소" draggable="true" ondragstart="dragM1(event)">💨 이산화탄소</div>
+          <div class="m1-badge" id="m1-word-chloroplast1" data-ans="엽록체" draggable="true" ondragstart="dragM1(event)">🏭 엽록체</div>
+          <div class="m1-badge" id="m1-word-chloro" data-ans="엽록소" draggable="true" ondragstart="dragM1(event)">🟢 엽록소</div>
+          <div class="m1-badge" id="m1-word-light" data-ans="빛에너지" draggable="true" ondragstart="dragM1(event)">☀️ 빛에너지</div>
+          <div class="m1-badge" id="m1-word-glucose1" data-ans="포도당" draggable="true" ondragstart="dragM1(event)">🍬 포도당</div>
+          <div class="m1-badge" id="m1-word-o2" data-ans="산소" draggable="true" ondragstart="dragM1(event)">🫧 산소</div>
+          <div class="m1-badge" id="m1-word-glucose2" data-ans="포도당" draggable="true" ondragstart="dragM1(event)">🍬 포도당</div>
+          <div class="m1-badge" id="m1-word-starch" data-ans="녹말" draggable="true" ondragstart="dragM1(event)">🥔 녹말</div>
+          <div class="m1-badge" id="m1-word-chloroplast2" data-ans="엽록체" draggable="true" ondragstart="dragM1(event)">🏭 엽록체</div>
+          <div class="m1-badge" id="m1-word-nitrogen" data-ans="질소" draggable="true" ondragstart="dragM1(event)">🧪 수소</div>
+          <div class="m1-badge" id="m1-word-hydrogen" data-ans="수소" draggable="true" ondragstart="dragM1(event)">🎈 탄소</div>
+          <div class="m1-badge" id="m1-word-protein" data-ans="단백질" draggable="true" ondragstart="dragM1(event)">🥚 단백질</div>
+           <div class="m1-badge" id="m1-word-protein" data-ans="단백질" draggable="true" ondragstart="dragM1(event)">🥚 화학에너지</div>
+        </div>
+
+        <!-- 11개의 빈칸(Dropzones)이 포함된 다듬어진 문장 -->
+        <div style="background: #ffffff; padding: 25px; border-radius: 12px; line-height: 2.4; font-size: 1.05rem; font-weight: bold; color: #37474f;">
+          • 광합성은 뿌리에서 흡수하여 <div class="m1-dropzone" id="m1-drop-1" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>을(를) 따라 잎까지 이동한 
+          <div class="m1-dropzone" id="m1-drop-2" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>와(과) 기공을 통해 들어온 
+          <div class="m1-dropzone" id="m1-drop-3" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>을(를) 원료로 한다.<br><br>
+          
+          • <div class="m1-dropzone" id="m1-drop-4" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>속에 있는 색소인 
+          <div class="m1-dropzone" id="m1-drop-5" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>이(가) 흡수한 
+          <div class="m1-dropzone" id="m1-drop-6" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>을(를) 이용하여 
+          <div class="m1-dropzone" id="m1-drop-7" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>와(과) 
+          <div class="m1-dropzone" id="m1-drop-8" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>을(를) 만든다.<br><br>
+          
+          • 처음 만들어진 양분인 <div class="m1-dropzone" id="m1-drop-9" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>은(는) 물에 녹지 않는 
+          <div class="m1-dropzone" id="m1-drop-10" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>(으)로 바뀌어 
+          <div class="m1-dropzone" id="m1-drop-11" ondrop="dropM1(event)" ondragover="allowDropM1(event)" ondragleave="dragLeaveM1(event)"></div>에 저장된다.
+        </div>
+
+        <p id="m1-summary-msg" style="text-align: center; color: #c62828; font-weight: bold; min-height: 1.2rem; margin-top: 15px;"></p>
+
+        <!-- 정답 확인 버튼 -->
+        <div style="text-align: center; margin-top: 15px;">
+          <button class="btn-action" style="padding: 14px 30px; font-size: 1.1rem; width: 100%;" onclick="checkM1Summary()">✨ 최종 정답 제출하기</button>
+        </div>
+      </div>
+      <!-- // 최종 정리 박스 끝 -->
+
+    </div>
+  </div>
+</main>
+
+<canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%; z-index: 9999;"></canvas>
+
+</body>
+</html>
