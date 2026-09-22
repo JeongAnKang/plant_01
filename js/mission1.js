@@ -88,38 +88,69 @@ window.drop = function(ev) {
 // ------------------------------------------
 // 💡 3. Step 5 (광합성의 모든 것) 드래그 앤 드롭
 // ------------------------------------------
-window.allowDropM1 = function(ev) {
-  ev.preventDefault();
-  if(ev.currentTarget) ev.currentTarget.classList.add('drag-over-m1');
-};
-window.dragLeaveM1 = function(ev) {
-  if(ev.currentTarget) ev.currentTarget.classList.remove('drag-over-m1');
-};
+// 1. 드래그 시작 시 요소의 ID 저장
 window.dragM1 = function(ev) {
-  ev.dataTransfer.setData("text/plain", ev.target.id);
+    ev.dataTransfer.setData("text/plain", ev.target.id);
 };
+
+// 2. 드롭 허용 영역 위에 있을 때 (시각적 효과 추가)
+window.allowDropM1 = function(ev) {
+    ev.preventDefault();
+    // ev.currentTarget은 이벤트가 걸려있는 빈칸(dropzone)을 의미합니다.
+    if (ev.currentTarget && ev.currentTarget.classList.contains('m1-dropzone')) {
+        ev.currentTarget.classList.add('drag-over-m1');
+    }
+};
+
+// 3. 영역 밖으로 나갈 때 (시각적 효과 제거)
+window.dragLeaveM1 = function(ev) {
+    if (ev.currentTarget && ev.currentTarget.classList.contains('m1-dropzone')) {
+        ev.currentTarget.classList.remove('drag-over-m1');
+    }
+};
+
+// 4. 실제로 드롭했을 때의 동작 (겹침 방지 및 교환 로직)
 window.dropM1 = function(ev) {
-  ev.preventDefault();
-  if(ev.currentTarget) ev.currentTarget.classList.remove('drag-over-m1');
+    ev.preventDefault();
+    
+    // 드롭한 타겟(빈칸 또는 풀장) 변수 지정
+    var dropZone = ev.currentTarget;
+    
+    // 드롭 시 hover 스타일(파란 테두리) 제거
+    if (dropZone && dropZone.classList.contains('m1-dropzone')) {
+        dropZone.classList.remove('drag-over-m1');
+    }
 
-  var data = ev.dataTransfer.getData("text/plain");
-  if (!data) return;
+    // 드래그해 온 요소의 데이터(ID) 가져오기
+    var data = ev.dataTransfer.getData("text/plain");
+    if (!data) return;
 
-  var el = document.getElementById(data);
-  if (el && el.classList.contains('m1-badge')) {
-      if (ev.currentTarget.classList.contains('m1-dropzone')) {
-          if (ev.currentTarget.children.length > 0) {
-              var existingBadge = ev.currentTarget.children[0];
-              document.getElementById('m1-badge-pool').appendChild(existingBadge);
-          }
-          ev.currentTarget.appendChild(el);
-      } 
-      else if (ev.currentTarget.id === 'm1-badge-pool') {
-          ev.currentTarget.appendChild(el);
-      }
-  }
+    var draggedElement = document.getElementById(data);
+    
+    // 가져온 요소가 정상적인 '뱃지'인지 확인
+    if (draggedElement && draggedElement.classList.contains('m1-badge')) {
+        
+        // [경우 1] 빈칸(dropzone)에 떨어뜨렸을 때
+        if (dropZone.classList.contains('m1-dropzone')) {
+            // 빈칸에 이미 다른 뱃지가 들어있는 경우
+            if (dropZone.children.length > 0) {
+                var existingBadge = dropZone.children[0];
+                
+                // 만약 자기 자신을 같은 자리에 다시 떨어뜨린 거라면 아무 동작 안 함
+                if (existingBadge === draggedElement) return;
+                
+                // 기존에 있던 뱃지는 풀장(m1-badge-pool)으로 돌려보냄 (밀어내기)
+                document.getElementById('m1-badge-pool').appendChild(existingBadge);
+            }
+            // 새로운 뱃지를 빈칸에 쏙 넣음
+            dropZone.appendChild(draggedElement);
+        } 
+        // [경우 2] 뱃지 풀장(badge pool)에 다시 되돌려 놓았을 때
+        else if (dropZone.id === 'm1-badge-pool') {
+            dropZone.appendChild(draggedElement);
+        }
+    }
 };
-
 // ------------------------------------------
 // 💡 4. 모달창 팝업 공통 처리 (Step 2~4 사용)
 // ------------------------------------------
